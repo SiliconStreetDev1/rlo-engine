@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RLO Audio Engine Test Rig</title>
+    <style>
+        body { font-family: system-ui, sans-serif; padding: 2rem; background: #1e1e1e; color: white; }
+        button { padding: 1rem 2rem; font-size: 1.2rem; cursor: pointer; margin-right: 1rem; }
+    </style>
+</head>
+<body>
+    <h1 style="margin-bottom: 0;">RLO Audio Engine Test Rig</h1>
+    <p>Open your browser console to see any errors.</p>
+    
+    <!-- SECTION: Micro Core -->
+    <div style="margin-top: 2rem; padding: 1.5rem; background: #2a2a2a; border-radius: 8px;">
+        <h2 style="margin-top: 0;">1. Micro Core (RLOCore)</h2>
+        <p style="color: #ccc;">Zero networking. Zero effects. Pure 1D memory arrays to soundwaves. (Perfect for js13k!)</p>
+        
+        <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button id="btnLoad80s" style="padding: 0.5rem 1rem; font-size: 1rem; background: #444; border: 1px solid #666; color: white; border-radius: 4px;">80s Arcade</button>
+            <button id="btnLoadCyberpunk" style="padding: 0.5rem 1rem; font-size: 1rem; background: #444; border: 1px solid #666; color: white; border-radius: 4px;">Cyberpunk (Mars 5/4)</button>
+            <button id="btnLoadNoir" style="padding: 0.5rem 1rem; font-size: 1rem; background: #444; border: 1px solid #666; color: white; border-radius: 4px;">Desert Noir</button>
+            <button id="btnLoadMary" style="padding: 0.5rem 1rem; font-size: 1rem; background: #444; border: 1px solid #666; color: white; border-radius: 4px;">Mary Had a little Lamb</button>
+            <button id="btnLoadMorning" style="padding: 0.5rem 1rem; font-size: 1rem; background: #444; border: 1px solid #666; color: white; border-radius: 4px;">Morning Mood</button>
+            <button id="btnLoadCanon" style="padding: 0.5rem 1rem; font-size: 1rem; background: #444; border: 1px solid #666; color: white; border-radius: 4px;">Canon in D</button>
+            <button id="btnLoadLevelUp" style="padding: 0.5rem 1rem; font-size: 1rem; background: #444; border: 1px solid #666; color: white; border-radius: 4px;">Level Up Sparkle</button>
+        </div>
+
+        <textarea id="coreTrackData" style="width: 100%; height: 220px; background: #333; color: white; border: 1px solid #555; border-radius: 4px; padding: 0.5rem; font-family: monospace; margin-bottom: 1rem;"></textarea>
+        <div>
+            <label style="margin-right: 1rem; font-size: 1.1rem;">Volume: <input type="range" id="coreVolumeSlider" min="0" max="1" step="0.05" value="0.2"></label>
+            <button id="btnCorePlay">Play Array Data</button>
+            <button id="btnCoreStop">Stop Core</button>
+        </div>
+    </div>
+
+    <!-- SECTION: Music Player -->
+    <div style="margin-top: 2rem; padding: 1.5rem; background: #2a2a2a; border-radius: 8px;">
+        <h2 style="margin-top: 0;">2. Music Player (RLOMusicPlayer)</h2>
+        <p style="color: #ccc;">Network streaming, Reverb spaces, UI tracking, and Gzip decompression.</p>
+        <h3 id="timingOutput" style="color: #4ade80; margin-top: 0;"></h3>
+        <select id="trackSelect" style="padding: 1rem; font-size: 1.1rem; margin-right: 1rem; background: #333; color: white; border: 1px solid #555; border-radius: 4px;"></select>
+        <button id="startBtnRlo">Play Compressed (.rlo)</button>
+        <button id="startBtnJson">Play Raw (.json)</button>
+        <button id="stopBtn">Stop</button>
+
+        <div style="display: flex; gap: 2rem; align-items: center; margin: 1.5rem 0; background: #333; padding: 1rem; border-radius: 8px;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 1.1rem;">
+            <input type="checkbox" id="loopCheck" checked style="width: 1.2rem; height: 1.2rem;"> 
+            Loop Track Infinite
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem;">
+            Speed: 
+            <input type="range" id="speedSlider" min="0.25" max="3" step="0.05" value="1">
+            <span id="speedValue" style="min-width: 3rem;">1.00x</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; margin-left: 1rem;">
+            Reverb:
+            <select id="reverbSelect" style="padding: 0.5rem; background: #333; color: white; border: 1px solid #555; border-radius: 4px;">
+                <option value="concert">Concert Hall</option>
+                <option value="studio">Studio Room</option>
+            </select>
+        </label>
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 1.1rem; margin-left: 1rem;">
+            <input type="checkbox" id="debugCheck" style="width: 1.2rem; height: 1.2rem;"> 
+            Log Debug Info
+        </label>
+    </div>
+
+        <div style="background: #333; padding: 1rem; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 1.1rem;"><span>Progress</span><span id="timeDisplay">0.00s / 0.00s</span></div>
+            <input type="range" id="seekSlider" value="0" max="100" step="0.1" style="width: 100%; cursor: pointer;">
+        </div>
+    </div>
+
+    <!-- SECTION: Game Engine -->
+    <div style="margin-top: 2rem; padding: 1.5rem; background: #2a2a2a; border-radius: 8px;">
+        <h2 style="margin-top: 0;">3. Game Engine (RLOGameEngine)</h2>
+        <p style="color: #ccc;">Instantiates a persistent master mixer with a dynamics compressor. Sound effects are fire-and-forget and won't interrupt the sequencer or cause clipping.</p>
+        <button id="btnPlayGameMusic">Loop Track Background Music</button>
+        <button id="btnStopGameMusic">Stop Music</button>
+        <div style="margin-top: 1rem;">
+            <button id="btnJumpSfx">SFX: Jump</button>
+            <button id="btnExplosionSfx">SFX: Explosion</button>
+            <button id="btnCoinSfx">SFX: Coin</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { RLOMusicPlayer, RLOGameEngine, RLOCore, RLOTranspiler } from './index.ts';
+        
+        function stopAll() {
+            if (coreEngine) coreEngine.stop();
+            if (musicPlayer) musicPlayer.stop();
+            if (gameEngine) gameEngine.stopMusic();
+        }
+
+        // ==========================================
+        // 1. CORE SEQUENCER UI LOGIC
+        // ==========================================
+        let coreEngine;
+        const coreVolumeSlider = document.getElementById('coreVolumeSlider');
+
+        coreVolumeSlider.addEventListener('input', (e) => {
+            if (coreEngine) coreEngine.setVolume(parseFloat(e.target.value));
+        });
+
+        const coreTrackData = document.getElementById('coreTrackData');
+
+        // ==========================================
+        // HARDCODED ARRAY EXAMPLES
+        // ==========================================
+        const examples = {
+            mary: `{
+    "durationSecs": 13.6,
+    "notes": [
+        98.00,  0.000, 0.34, 1.0, 27, 146.83, 0.000, 0.34, 1.0, 27, 196.00, 0.000, 0.34, 1.0, 27,
+        40,     0.000, 0.08, 1.0, 128,
+        40,     0.212, 0.08, 1.0, 128,
+        
+        92.50,  0.425, 0.34, 1.0, 27, 138.59, 0.425, 0.34, 1.0, 27, 185.00, 0.425, 0.34, 1.0, 27,
+        80,     0.425, 0.08, 1.0, 128,
+        40,     0.637, 0.08, 1.0, 128,
+        
+        82.41,  0.850, 0.34, 1.0, 27, 123.47, 0.850, 0.34, 1.0, 27, 164.81, 0.850, 0.34, 1.0, 27,
+        40,     0.850, 0.08, 1.0, 128,
+        40,     1.062, 0.08, 1.0, 128,
+        
+        92.50,  1.275, 0.34, 1.0, 27, 138.59, 1.275, 0.34, 1.0, 27, 185.00, 1.275, 0.34, 1.0, 27,
+        80,     1.275, 0.08, 1.0, 128,
+        40,     1.487, 0.08, 1.0, 128,
+        
+        98.00,  1.700, 0.34, 1.0, 27, 146.83, 1.700, 0.34, 1.0, 27, 196.00, 1.700, 0.34, 1.0, 27,
+        40,     1.700, 0.08, 1.0, 128,
+        40,     1.912, 0.08, 1.0, 128,
+        
+        98.00,  2.125, 0.34, 1.0, 27, 146.83, 2.125, 0.34, 1.0, 27, 196.00, 2.125, 0.34, 1.0, 27,
+        80,     2.125, 0.08, 1.0, 128,
+        40,     2.337, 0.08, 1.0, 128,
+        
+        98.00,  2.550, 0.68, 1.0, 27, 146.83, 2.550, 0.68, 1.0, 27, 196.00, 2.550, 0.68, 1.0, 27,
+        40,     2.550, 0.08, 1.0, 128,
+        40,     2.762, 0.08, 1.0, 128,
+        80,     2.975, 0.08, 1.0, 128,
+        40,     3.187, 0.08, 1.0, 128,
+        
+        92.50,  3.400, 0.34, 1.0, 27, 138.59, 3.400, 0.34, 1.0, 27, 185.00, 3.400, 0.34, 1.0, 27,
+        40,     3.400, 0.08, 1.0, 128,
+        40,     3.612, 0.08, 1.0, 128,
+        
+        92.50,  3.825, 0.34, 1.0, 27, 138.59, 3.825, 0.34, 1.0, 27, 185.00, 3.825, 0.34, 1.0, 27,
+        80,     3.825, 0.08, 1.0, 128,
+        40,     4.037, 0.08, 1.0, 128,
+        
+        92.50,  4.250, 0.68, 1.0, 27, 138.59, 4.250, 0.68, 1.0, 27, 185.00, 4.250, 0.68, 1.0, 27,
+        40,     4.250, 0.08, 1.0, 128,
+        40,     4.462, 0.08, 1.0, 128,
+        80,     4.675, 0.08, 1.0, 128,
+        40,     4.887, 0.08, 1.0, 128,
+        
+        98.00,  5.100, 0.34, 1.0, 27, 146.83, 5.100, 0.34, 1.0, 27, 196.00, 5.100, 0.34, 1.0, 27,
+        40,     5.100, 0.08, 1.0, 128,
+        40,     5.312, 0.08, 1.0, 128,
+        
+        123.47, 5.525, 0.34, 1.0, 27, 185.00, 5.525, 0.34, 1.0, 27, 246.94, 5.525, 0.34, 1.0, 27,
+        80,     5.525, 0.08, 1.0, 128,
+        40,     5.737, 0.08, 1.0, 128,
+        
+        123.47, 5.950, 0.68, 1.0, 27, 185.00, 5.950, 0.68, 1.0, 27, 246.94, 5.950, 0.68, 1.0, 27,
+        40,     5.950, 0.08, 1.0, 128,
+        40,     6.162, 0.08, 1.0, 128,
+        80,     6.375, 0.08, 1.0, 128,
+        40,     6.587, 0.08, 1.0, 128,
+        
+        98.00,  6.800, 0.34, 1.0, 27, 146.83, 6.800, 0.34, 1.0, 27, 196.00, 6.800, 0.34, 1.0, 27,
+        40,     6.800, 0.08, 1.0, 128,
+        40,     7.012, 0.08, 1.0, 128,
+        
+        92.50,  7.225, 0.34, 1.0, 27, 138.59, 7.225, 0.34, 1.0, 27, 185.00, 7.225, 0.34, 1.0, 27,
+        80,     7.225, 0.08, 1.0, 128,
+        40,     7.437, 0.08, 1.0, 128,
+        
+        82.41,  7.650, 0.34, 1.0, 27, 123.47, 7.650, 0.34, 1.0, 27, 164.81, 7.650, 0.34, 1.0, 27,
+        40,     7.650, 0.08, 1.0, 128,
+        40,     7.862, 0.08, 1.0, 128,
+        
+        92.50,  8.075, 0.34, 1.0, 27, 138.59, 8.075, 0.34, 1.0, 27, 185.00, 8.075, 0.34, 1.0, 27,
+        80,     8.075, 0.08, 1.0, 128,
+        40,     8.287, 0.08, 1.0, 128,
+        
+        98.00,  8.500, 0.34, 1.0, 27, 146.83, 8.500, 0.34, 1.0, 27, 196.00, 8.500, 0.34, 1.0, 27,
+        40,     8.500, 0.08, 1.0, 128,
+        40,     8.712, 0.08, 1.0, 128,
+        
+        98.00,  8.925, 0.34, 1.0, 27, 146.83, 8.925, 0.34, 1.0, 27, 196.00, 8.925, 0.34, 1.0, 27,
+        80,     8.925, 0.08, 1.0, 128,
+        40,     9.137, 0.08, 1.0, 128,
+        
+        98.00,  9.350, 0.34, 1.0, 27, 146.83, 9.350, 0.34, 1.0, 27, 196.00, 9.350, 0.34, 1.0, 27,
+        40,     9.350, 0.08, 1.0, 128,
+        40,     9.562, 0.08, 1.0, 128,
+        
+        98.00,  9.775, 0.34, 1.0, 27, 146.83, 9.775, 0.34, 1.0, 27, 196.00, 9.775, 0.34, 1.0, 27,
+        80,     9.775, 0.08, 1.0, 128,
+        40,     9.987, 0.08, 1.0, 128,
+        
+        92.50,  10.200, 0.34, 1.0, 27, 138.59, 10.200, 0.34, 1.0, 27, 185.00, 10.200, 0.34, 1.0, 27,
+        40,     10.200, 0.08, 1.0, 128,
+        40,     10.412, 0.08, 1.0, 128,
+        
+        92.50,  10.625, 0.34, 1.0, 27, 138.59, 10.625, 0.34, 1.0, 27, 185.00, 10.625, 0.34, 1.0, 27,
+        80,     10.625, 0.08, 1.0, 128,
+        40,     10.837, 0.08, 1.0, 128,
+        
+        98.00,  11.050, 0.34, 1.0, 27, 146.83, 11.050, 0.34, 1.0, 27, 196.00, 11.050, 0.34, 1.0, 27,
+        40,     11.050, 0.08, 1.0, 128,
+        40,     11.262, 0.08, 1.0, 128,
+        
+        92.50,  11.475, 0.34, 1.0, 27, 138.59, 11.475, 0.34, 1.0, 27, 185.00, 11.475, 0.34, 1.0, 27,
+        80,     11.475, 0.08, 1.0, 128,
+        40,     11.687, 0.08, 1.0, 128,
+        
+        82.41,  11.900, 1.615, 1.0, 27, 123.47, 11.900, 1.615, 1.0, 27, 164.81, 11.900, 1.615, 1.0, 27,
+        40,     11.900, 0.08, 1.0, 128,
+        40,     12.112, 0.08, 1.0, 128,
+        80,     12.325, 0.08, 1.0, 128,
+        40,     12.537, 0.08, 1.0, 128,
+        40,     12.750, 0.08, 1.0, 128,
+        40,     12.962, 0.08, 1.0, 128,
+        80,     13.175, 0.08, 1.0, 128,
+        40,     13.387, 0.08, 1.0, 128
+    ]
+}`,
+            levelup: `{
+    "durationSecs": 1.5,
+    "notes": [
+        523.25, 0.00, 0.2, 0.8, 9,
+        659.25, 0.10, 0.2, 0.8, 9,
+        783.99, 0.20, 0.2, 0.8, 9,
+        1046.50, 0.30, 0.5, 0.9, 9,
+        1318.51, 0.40, 0.8, 0.9, 9
+    ]
+}`
+        };
+
+        // Set initial default
+        coreTrackData.value = examples.mary;
+
+        // Hook up preset buttons
+        const btnPlay = document.getElementById('btnCorePlay');
+        document.getElementById('btnLoadMary').addEventListener('click', () => { coreTrackData.value = examples.mary; btnPlay.click(); });
+        document.getElementById('btnLoadLevelUp').addEventListener('click', () => { coreTrackData.value = examples.levelup; btnPlay.click(); });
+        
+        document.getElementById('btnLoad80s').addEventListener('click', async () => {
+            const res = await fetch('/tracks/array/80s.json');
+            coreTrackData.value = await res.text();
+            btnPlay.click();
+        });
+        
+        document.getElementById('btnLoadCyberpunk').addEventListener('click', async () => {
+            const res = await fetch('/tracks/array/cyberpunk.json');
+            coreTrackData.value = await res.text();
+            btnPlay.click();
+        });
+        
+        document.getElementById('btnLoadNoir').addEventListener('click', async () => {
+            const res = await fetch('/tracks/array/noir.json');
+            coreTrackData.value = await res.text();
+            btnPlay.click();
+        });
+
+        document.getElementById('btnLoadMorning').addEventListener('click', async () => {
+            const res = await fetch('/tracks/array/Morningmood.json');
+            coreTrackData.value = await res.text();
+            btnPlay.click();
+        });
+        
+        document.getElementById('btnLoadCanon').addEventListener('click', async () => {
+            const res = await fetch('/tracks/array/Canon.json');
+            coreTrackData.value = await res.text();
+            btnPlay.click();
+        });
+
+        document.getElementById('btnCorePlay').addEventListener('click', () => {
+            stopAll();
+            if (!coreEngine) {
+                coreEngine = new RLOCore(new (window.AudioContext || window.webkitAudioContext)());
+                coreEngine.setVolume(parseFloat(coreVolumeSlider.value));
+            }
+            
+            try {
+                const trackData = JSON.parse(coreTrackData.value);
+                coreEngine.playSequence(trackData, true);
+            } catch (err) {
+                alert("Invalid JSON data: " + err.message);
+            }
+        });
+        
+        document.getElementById('btnCoreStop').addEventListener('click', () => stopAll());
+
+        // ==========================================
+        // 2. MUSIC PLAYER UI LOGIC
+        // ==========================================
+        let musicPlayer;
+        const timingOutput = document.getElementById('timingOutput');
+        const trackSelect = document.getElementById('trackSelect');
+        const loopCheck = document.getElementById('loopCheck');
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValue = document.getElementById('speedValue');
+        const reverbSelect = document.getElementById('reverbSelect');
+        const seekSlider = document.getElementById('seekSlider');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const debugCheck = document.getElementById('debugCheck');
+        let progressAnimId = null;
+        let isDragging = false;
+        
+        // Hook up debug toggle to global scope for the synthesizer
+        debugCheck.addEventListener('change', (e) => {
+            window.DEBUG_MIDI = e.target.checked;
+        });
+        
+        // Hook up reverb mode toggle
+        reverbSelect.addEventListener('change', (e) => {
+            if (musicPlayer) musicPlayer.setReverbMode(e.target.value);
+        });
+        
+        // Fetch the manifest and build the dynamic playlist dropdown
+        fetch('/dist/tracks/manifest.json')
+            .then(res => res.json())
+            .then(manifest => {
+                manifest.forEach(track => {
+                    const option = document.createElement('option');
+                    option.value = track.url;
+                    // Grab the folder name from the URL (e.g., 'beeth' or 'loose_midi') to categorize the list
+                    const folderName = track.url.split('/')[3];
+                    option.textContent = `[${folderName}] ${track.name}`;
+                    trackSelect.appendChild(option);
+                    
+                    if (track.id === 'elise') {
+                        option.selected = true;
+                    }
+                });
+            })
+            .catch(err => console.error("Manifest load failed. Did you run the compiler?", err));
+
+        // Hook up playback speed control
+        speedSlider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value).toFixed(2);
+            speedValue.textContent = `${val}x`;
+            if (musicPlayer) musicPlayer.playbackRate = parseFloat(val);
+        });
+
+        // Scrubbing / Seeking logic
+        const applySeek = () => {
+            isDragging = false;
+            if (musicPlayer && musicPlayer.getTotalDuration() > 0) {
+                const targetTime = (seekSlider.value / 100) * musicPlayer.getTotalDuration();
+                musicPlayer.seek(targetTime);
+            }
+        };
+        seekSlider.addEventListener('mousedown', () => isDragging = true);
+        seekSlider.addEventListener('touchstart', () => isDragging = true);
+        seekSlider.addEventListener('mouseup', applySeek);
+        seekSlider.addEventListener('touchend', applySeek);
+        seekSlider.addEventListener('input', () => {
+            // Update time visually immediately while dragging
+            if (musicPlayer) {
+                const targetTime = (seekSlider.value / 100) * musicPlayer.getTotalDuration();
+                timeDisplay.textContent = `${targetTime.toFixed(2)}s / ${musicPlayer.getTotalDuration().toFixed(2)}s`;
+            }
+        });
+
+        // The visualizer update loop
+        function updateProgress() {
+            if (musicPlayer && musicPlayer.getCurrentTime) {
+                const currentTime = musicPlayer.getCurrentTime();
+                const totalTime = musicPlayer.getTotalDuration();
+                if (!isDragging) {
+                    timeDisplay.textContent = `${currentTime.toFixed(2)}s / ${totalTime.toFixed(2)}s`;
+                    seekSlider.value = totalTime > 0 ? (currentTime / totalTime) * 100 : 0;
+                }
+            }
+            progressAnimId = requestAnimationFrame(updateProgress);
+        }
+
+        async function playTrack(url) {
+            stopAll();
+
+            if (!musicPlayer) {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                musicPlayer = new RLOMusicPlayer(ctx);
+            }
+            
+            if (progressAnimId) cancelAnimationFrame(progressAnimId);
+            
+            musicPlayer.setReverbMode(reverbSelect.value);
+            musicPlayer.playbackRate = parseFloat(speedSlider.value);
+            const start = performance.now();
+            await musicPlayer.play(url, 0, loopCheck.checked); 
+            const end = performance.now();
+            timingOutput.innerText = `Track started in ${(end - start).toFixed(2)} ms!`;
+            updateProgress(); // Start animating progress bar
+        }
+
+        document.getElementById('startBtnRlo').addEventListener('click', () => {
+            if (trackSelect.value) {
+                playTrack(trackSelect.value); 
+            }
+        });
+
+        document.getElementById('startBtnJson').addEventListener('click', () => {
+            if (trackSelect.value) {
+                playTrack(trackSelect.value.replace('.rlo', '.json')); 
+            }
+        });
+
+        document.getElementById('stopBtn').addEventListener('click', () => {
+            stopAll();
+            timingOutput.innerText = '';
+            if (progressAnimId) cancelAnimationFrame(progressAnimId);
+            seekSlider.value = 0;
+            timeDisplay.textContent = '0.00s / 0.00s';
+        });
+
+        // ==========================================
+        // 3. GAME ENGINE UI LOGIC
+        // ==========================================
+        let gameEngine;
+        
+        document.getElementById('btnPlayGameMusic').addEventListener('click', async () => {
+            stopAll();
+            if (!gameEngine) gameEngine = new RLOGameEngine(new (window.AudioContext || window.webkitAudioContext)());
+            
+            const url = trackSelect.value;
+            if (!url) return alert("Select a track from the dropdown first!");
+            
+            // Manually fetch and decompress since the Game Engine doesn't include the network/fetching module!
+            const res = await fetch(url);
+            let trackData;
+            
+            if (url.endsWith('.json')) {
+                const text = await res.text();
+                trackData = JSON.parse(text);
+            } else {
+                const ds = new DecompressionStream('gzip');
+                const decompressedStream = res.body.pipeThrough(ds);
+                const buffer = await new Response(decompressedStream).arrayBuffer();
+                trackData = RLOTranspiler._decodeBinary(buffer);
+            }
+            
+            gameEngine.playMusic(trackData, true, 0.5);
+        });
+        
+        document.getElementById('btnStopGameMusic').addEventListener('click', () => stopAll());
+
+        document.getElementById('btnJumpSfx').addEventListener('click', () => {
+            if (!gameEngine) gameEngine = new RLOGameEngine(new (window.AudioContext || window.webkitAudioContext)());
+            gameEngine.playSFX(80, 880, 0.1, 0.6, 0); // Lead (80), 880Hz, Short
+            gameEngine.playSFX(80, 1200, 0.2, 0.6, 0.1); // Plays exactly 100ms later using native offset
+        });
+
+        document.getElementById('btnExplosionSfx').addEventListener('click', () => {
+            if (!gameEngine) gameEngine = new RLOGameEngine(new (window.AudioContext || window.webkitAudioContext)());
+            
+            // 1. Initial Shockwave & White Noise Crack
+            gameEngine.playSFX(128, 40, 1.0, 1.0); // Deep Kick
+            gameEngine.playSFX(128, 80, 1.0, 1.0); // Snare (White Noise)
+            
+            // 2. The Low-Frequency Rumble (Electric Guitar overdrive cluster)
+            gameEngine.playSFX(27, 30, 2.0, 1.0); 
+            gameEngine.playSFX(27, 34, 2.0, 1.0); 
+            gameEngine.playSFX(27, 38, 2.0, 1.0); 
+
+            // 3. Falling Debris & Seismic Aftershock (FX Synth pitch dive + 15Hz stutter)
+            gameEngine.playSFX(120, 120, 3.0, 1.0);
+            gameEngine.playSFX(120, 60, 3.0, 1.0);
+
+            // 4. Secondary Debris Cracks
+            gameEngine.playSFX(128, 80, 1.0, 0.8, 0.1);
+            gameEngine.playSFX(128, 40, 1.0, 0.7, 0.18);
+            gameEngine.playSFX(128, 80, 1.0, 0.5, 0.3);
+            gameEngine.playSFX(120, 40, 2.0, 0.6, 0.4); // Final deep sub rumble
+        });
+
+        document.getElementById('btnCoinSfx').addEventListener('click', () => {
+            if (!gameEngine) gameEngine = new RLOGameEngine(new (window.AudioContext || window.webkitAudioContext)());
+            gameEngine.playSFX(9, 987, 0.1, 0.7, 0); // Glockenspiel (9)
+            gameEngine.playSFX(9, 1318, 0.4, 0.7, 0.1);
+        });
+
+    </script>
+</body>
+</html>

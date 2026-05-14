@@ -1,0 +1,50 @@
+{
+  "name": "rlo-engine",
+  "version": "1.0.3",
+  "description": "A micro-compiler and procedural Web Audio engine for web-based games.",
+  "author": "Rikardt Louw",
+  "license": "MIT",
+  "keywords": [
+    "webaudio",
+    "js13k",
+    "procedural-audio",
+    "midi",
+    "synthesizer"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SiliconStreetDev1/rlo-engine.git"
+  },
+  "main": "dist/rlo-engine.min.umd.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "module": "dist/rlo-engine.min.js",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "bin": {
+    "rlo": "./dist/compiler.js"
+  },
+  "scripts": {
+    "dev": "vite",
+    "start": "npm run compile-rlo && vite",
+    "build": "vite build && tsc",
+    "build:crush": "vite build --config vite.config.js13k.ts",
+    "compile-rlo": "tsx compiler.ts",
+    "compile-json": "tsx compiler.ts --json",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@tonejs/midi": "^2.0.28",
+    "adm-zip": "^0.5.10"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.5",
+    "@types/node": "^20.12.7",
+    "tsx": "^4.11.0",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.0",
+    "terser": "^5.30.3"
+  }
+}

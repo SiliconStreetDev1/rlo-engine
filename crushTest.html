@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>JS13k Crush Build Tester</title>
+  <style>
+    body { background: #111; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; flex-direction: column; }
+    button { background: #0f0; color: #111; border: none; padding: 1rem 2rem; font-size: 1.5rem; cursor: pointer; font-weight: bold; border-radius: 4px; }
+    button:hover { background: #fff; }
+    p { text-align: center; max-width: 600px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <h1>JS13k Crush Build Tester</h1>
+  <p>Testing the strictly minified ES module.<br>Includes ONLY: PianoSynth, ChromaticPercussionSynth, SlapBassSynth.</p>
+  <button id="playBtn">Click to Play Demo</button>
+
+  <script type="module">
+    // Import strictly from the crushed bundle
+    import { RLOCore } from './dist/rlo-engine.min.js';
+
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // The engine automatically uses the map you baked into crush.ts!
+    const engine = new RLOCore(ctx);
+
+    // Sequence: [freq, time, dur, vel, id]
+    const testGroove = {
+      durationSecs: 2.0,
+      notes: [
+        // Slap Bass Line (ID 36)
+        164.81, 0.0,  0.15, 0.9, 36, // E3 (Slap!)
+        164.81, 0.25, 0.1,  0.7, 36, // E3 (Ghost note)
+        196.00, 0.4,  0.15, 1.0, 36, // G3 (Pop!)
+        164.81, 0.75, 0.15, 0.9, 36, // E3
+        246.94, 1.25, 0.15, 1.0, 36, // B3 (Pop!)
+        220.00, 1.5,  0.15, 0.8, 36, // A3
+        196.00, 1.75, 0.15, 0.8, 36, // G3
+
+        // Piano Chords (ID 0)
+        329.63, 0.0, 0.5, 0.6, 0, // E4
+        392.00, 0.0, 0.5, 0.6, 0, // G4
+        493.88, 0.0, 0.5, 0.6, 0, // B4
+
+        392.00, 1.0, 0.4, 0.5, 0, // G4
+        493.88, 1.0, 0.4, 0.5, 0, // B4
+        587.33, 1.0, 0.4, 0.5, 0, // D5
+
+        // Chromatic Percussion / Marimba Accents (ID 8)
+        659.25, 0.5,  0.1, 0.8, 8, // E5
+        783.99, 0.75, 0.1, 0.8, 8, // G5
+        987.77, 1.5,  0.1, 0.9, 8  // B5
+      ]
+    };
+
+    document.getElementById('playBtn').addEventListener('click', () => {
+      if (ctx.state === 'suspended') ctx.resume();
+      engine.playSequence(testGroove, true);
+    });
+  </script>
+</body>
+</html>
