@@ -4,6 +4,8 @@ An optimized compiler and procedural Web Audio engine designed specifically for 
 
 RLO converts sequence files (like MIDI) into 1D numerical arrays, bypassing the need for external parsing libraries or audio samples. Audio is synthesized dynamically at runtime using pure mathematics and the native Web Audio API.
 
+
+Demo PWA game using this library : https://github.com/SiliconStreetDev1/NeonBlitz
 ### 🚀 Two Ways to Use the Engine
 
 This library uses a **Hybrid Architecture**. You can either install it directly via NPM for standard development, or clone it as a build-pipeline boilerplate to achieve high compression for JS13K competitions.
