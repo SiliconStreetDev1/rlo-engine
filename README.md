@@ -6,6 +6,9 @@ RLO converts sequence files (like MIDI) into 1D numerical arrays, bypassing the 
 
 
 Demo PWA game using this library : https://github.com/SiliconStreetDev1/NeonBlitz
+
+🎮 **[PLAY NEON BLITZ DIRECTLY IN YOUR BROWSER HERE!](https://siliconstreetdev1.github.io/NeonBlitz/)** 🎮
+
 ### 🚀 Two Ways to Use the Engine
 
 This library uses a **Hybrid Architecture**. You can either install it directly via NPM for standard development, or clone it as a build-pipeline boilerplate to achieve high compression for JS13K competitions.
