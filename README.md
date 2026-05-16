@@ -9,6 +9,10 @@ Demo PWA game using this library : https://github.com/SiliconStreetDev1/NeonBlit
 
 🎮 **[PLAY NEON BLITZ DIRECTLY IN YOUR BROWSER HERE!](https://siliconstreetdev1.github.io/NeonBlitz/)** 🎮
 
+
+See JS13ksize working example:
+https://github.com/SiliconStreetDev1/NeonBlitzjs13k
+
 ### 🚀 Two Ways to Use the Engine
 
 This library uses a **Hybrid Architecture**. You can either install it directly via NPM for standard development, or clone it as a build-pipeline boilerplate to achieve high compression for JS13K competitions.
