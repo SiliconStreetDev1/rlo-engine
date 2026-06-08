@@ -1,8 +1,15 @@
 /**
- * DEDICATED JS13K ENTRY POINT
- * Only export what you explicitly use. Rollup will violently tree-shake everything else.
+ * @fileoverview DEDICATED JS13K ENTRY POINT
+ * 
+ * @reason Why do we have a separate entry point for JS13k?
+ * The standard NPM entry point (`index.ts`) instantiates a `MasterInstrumentMap`
+ * containing all 16 default synthesizers, which prevents Rollup from tree-shaking them.
+ * This `crush.ts` file only instantiates exactly the synths you manually define here,
+ * allowing Rollup to violently tree-shake all unused synthesizers, bringing the engine 
+ * weight down from 7KB to ~2KB.
  */
-import { RLOCore as BaseCore, createDirectMap } from "./RLO-Player.js";
+import { createDirectMap } from "./Core/InstrumentMap.js";
+import { RLOCore as BaseCore } from "./Core/RLOCore.js";
 
 import { PianoSynth } from "./Instruments/Decay/PianoSynth.js";
 import { ChromaticPercussionSynth } from "./Instruments/Decay/ChromaticPercussionSynth.js";

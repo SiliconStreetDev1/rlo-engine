@@ -1,7 +1,14 @@
-import { CoreSynthBase, Osc, Filter } from "../CoreSynthBase.js";
+import { CoreSynthBase, hasStrictGC } from "../CoreSynthBase.js";
 
 /**
  * Synthesizer strategy for Percussion and Drum kits.
+ */
+/**
+ * A specialized routing class that uses note frequency as a trigger map to synthesize distinct drum kit pieces (Kick, Snare, Hi-Hat, etc.).
+ * 
+ * @reason Acoustic Design:
+ * Encapsulates the specific Web Audio node routing and ADSR parameters
+ * required to physically model this instrument within the 13KB limit.
  */
 export class DrumSynth extends CoreSynthBase {
   /** Cached white noise buffer to prevent massive memory allocations and GC spikes. */
@@ -31,50 +38,50 @@ export class DrumSynth extends CoreSynthBase {
   ): void {
     /** Standard MIDI maps specific frequencies to specific drum kit pieces */
     if (freq < 70) {
-      const gain = this._gain(ctx, 0, masterGain);
-      const osc = this._osc(ctx, Osc.Sine, 0, gain);
+      const gain = this._createGain(ctx, 0, masterGain);
+      const osc = this._createOscillator(ctx, "sine", 0, gain);
 
-      this._set(osc.frequency, 150, time);
-      this._exp(osc.frequency, 30, time + 0.1);
-      this._set(gain.gain, Math.max(0.001, velocity * 1.5), time);
-      this._exp(gain.gain, 0.001, time + 0.5);
+      this._setValueAtTime(osc.frequency, 150, time);
+      this._exponentialRampToValue(osc.frequency, 30, time + 0.1);
+      this._setValueAtTime(gain.gain, Math.max(0.001, velocity * 1.5), time);
+      this._exponentialRampToValue(gain.gain, 0.001, time + 0.5);
 
-      this._on(time, time + 0.5, osc);
+      this._scheduleNodeStartStop(time, time + 0.5, osc);
 
-      this._gc(ctx, time, time + 0.6, gain);
+      if (hasStrictGC) this._scheduleNodeDisposal(ctx, time, time + 0.6, gain);
     } else {
       /** HI-HAT / SNARE (White Noise generation) */
       const isSnare = freq < 90;
 
       const noise = ctx.createBufferSource();
       noise.buffer = DrumSynth._getNoiseBuffer(ctx);
-      const gain = this._gain(ctx, 0, masterGain);
-      const filter = this._filter(
+      const gain = this._createGain(ctx, 0, masterGain);
+      const filter = this._createFilter(
         ctx,
-        isSnare ? Filter.Bandpass : Filter.Highpass,
+        isSnare ? "bandpass" : "highpass",
       );
-      const panner = this._pan(ctx, isSnare ? 0 : Math.random() * 0.6 - 0.3);
+      const panner = this._createStereoPanner(ctx, isSnare ? 0 : Math.random() * 0.6 - 0.3);
 
       filter.frequency.value = isSnare ? 1500 : 5000;
 
-      this._set(gain.gain, Math.max(0.001, velocity), time);
-      this._exp(gain.gain, 0.001, time + (isSnare ? 0.2 : 0.05));
+      this._setValueAtTime(gain.gain, Math.max(0.001, velocity), time);
+      this._exponentialRampToValue(gain.gain, 0.001, time + (isSnare ? 0.2 : 0.05));
 
       noise.connect(filter).connect(gain).connect(panner);
-      this._on(time, time + (isSnare ? 0.2 : 0.05), noise);
+      this._scheduleNodeStartStop(time, time + (isSnare ? 0.2 : 0.05), noise);
 
       /** Add an extra body thwack tone if it is a snare */
       if (isSnare) {
-        const snareOsc = this._osc(ctx, Osc.Triangle, 0, gain);
+        const snareOsc = this._createOscillator(ctx, "triangle", 0, gain);
         /** Snare drum head tension: quick pitch drop when the stick hits the skin */
-        this._set(snareOsc.frequency, 300, time);
-        this._exp(snareOsc.frequency, 100, time + 0.1);
-        this._on(time, time + 0.2, snareOsc);
+        this._setValueAtTime(snareOsc.frequency, 300, time);
+        this._exponentialRampToValue(snareOsc.frequency, 100, time + 0.1);
+        this._scheduleNodeStartStop(time, time + 0.2, snareOsc);
       } else {
         /** 808 Cymbal Metallic Ring: TR-808 hi-hats contain high-pitched ringing square waves */
-        this._transient(
+        this._createTransient(
           ctx,
-          Osc.Square,
+          "square",
           7000,
           panner,
           time,
@@ -83,7 +90,7 @@ export class DrumSynth extends CoreSynthBase {
         );
       }
 
-      this._gc(ctx, time, time + 0.4, filter, gain, panner);
+      if (hasStrictGC) this._scheduleNodeDisposal(ctx, time, time + 0.4, filter, gain, panner);
     }
   }
 }

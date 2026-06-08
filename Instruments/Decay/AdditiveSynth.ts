@@ -5,8 +5,15 @@ import { Osc } from "../CoreSynthBase.js";
  * Synthesizer strategy for Inharmonic Additive bells/glass.
  * Stacks sine waves at non-integer multiples to create metallic, clanging overtones.
  */
+/**
+ * Creates complex timbres by summing together multiple sine waves at mathematically calculated harmonic ratios.
+ * 
+ * @reason Acoustic Design:
+ * Encapsulates the specific Web Audio node routing and ADSR parameters
+ * required to physically model this instrument within the 13KB limit.
+ */
 export class AdditiveSynth extends DecaySynthBase {
-  protected _c = { v: 0.6, a: 0.005, d: 0.5, m: 5.0 };
+  protected _envelopeConfig = { _peakVelocity: 0.6, _attackTimeSeconds: 0.005, _decayTimeSeconds: 0.5, _maxDurationSeconds: 5.0 };
 
   protected _setupSynthesis(
     ctx: AudioContext,
@@ -26,7 +33,7 @@ export class AdditiveSynth extends DecaySynthBase {
       if (hFreq < 22000) {
         const peak = Math.max(0.001, velocity * (1 / (i + 1.5)));
         const dur = Math.max(0.1, safeDuration * decays[i]);
-        this._transient(ctx, Osc.Sine, hFreq, gain, time, peak, dur, 0.005);
+        this._createTransient(ctx, "sine", hFreq, gain, time, peak, dur, 0.005);
       }
     });
   }

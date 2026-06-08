@@ -89,7 +89,7 @@
     </div>
 
     <script type="module">
-        import { RLOMusicPlayer, RLOGameEngine, RLOCore, RLOTranspiler } from './index.ts';
+        import { RLOMusicPlayer, RLOGameEngine, RLOCore, decodeBinary } from './index.ts';
         
         function stopAll() {
             if (coreEngine) coreEngine.stop();
@@ -447,7 +447,7 @@
                 const ds = new DecompressionStream('gzip');
                 const decompressedStream = res.body.pipeThrough(ds);
                 const buffer = await new Response(decompressedStream).arrayBuffer();
-                trackData = RLOTranspiler._decodeBinary(buffer);
+                trackData = decodeBinary(buffer);
             }
             
             gameEngine.playMusic(trackData, true, 0.5);

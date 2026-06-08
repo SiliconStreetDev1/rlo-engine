@@ -5,8 +5,15 @@ import { Osc } from "../CoreSynthBase.js";
  * Synthesizer strategy for 8-bit Chiptune sounds.
  * Uses a raw square wave with a rapid pitch-drop "blip" attack.
  */
+/**
+ * Generates retro 8-bit style square waves, ideal for recreating classic video game soundtracks.
+ * 
+ * @reason Acoustic Design:
+ * Encapsulates the specific Web Audio node routing and ADSR parameters
+ * required to physically model this instrument within the 13KB limit.
+ */
 export class ChiptuneSynth extends AnalogSynthBase {
-  protected _c = { v: 0.4, a: 0.005, r: 0.05 };
+  protected _envelopeConfig = { _peakVelocity: 0.4, _attackTimeSeconds: 0.005, _releaseTimeSeconds: 0.05 };
 
   protected _setupSynthesis(
     ctx: AudioContext,
@@ -18,12 +25,12 @@ export class ChiptuneSynth extends AnalogSynthBase {
     releaseTime: number,
     stopTime: number,
   ): AudioNode | void {
-    const osc = this._osc(ctx, Osc.Square, 0, gain);
+    const osc = this._createOscillator(ctx, "square", 0, gain);
 
     /** Classic tracker "blip" attack: starts one octave higher for a fraction of a second */
-    this._set(osc.frequency, freq * 2, time);
-    this._set(osc.frequency, freq, time + 0.02);
+    this._setValueAtTime(osc.frequency, freq * 2, time);
+    this._setValueAtTime(osc.frequency, freq, time + 0.02);
 
-    this._on(time, stopTime, osc);
+    this._scheduleNodeStartStop(time, stopTime, osc);
   }
 }

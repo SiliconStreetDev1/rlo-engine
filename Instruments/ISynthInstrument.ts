@@ -1,5 +1,11 @@
 /**
  * Interface for all synthesizer instrument strategies.
+ * 
+ * @reason Strategy Pattern Isolation:
+ * By forcing all Synthesizers to conform to a single `_playNote` contract,
+ * the `Synthesizer` router does not need to know if it is triggering an FM synth,
+ * an Additive synth, or a simple Oscillator. This allows Rollup to easily tree-shake 
+ * unused classes because there is no hard-coded type checking or switch statements.
  */
 export interface ISynthInstrument {
   /**

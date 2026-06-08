@@ -1,5 +1,5 @@
 import { AnalogSynthBase } from "./AnalogSynthBase.js";
-import { Osc, Filter } from "../CoreSynthBase.js";
+import {} from "../CoreSynthBase.js";
 
 /**
  * Synthesizer strategy for Synth Pads (Warm, Choir, Halo, Bowed).
@@ -20,29 +20,29 @@ export class PadSynth extends AnalogSynthBase {
     releaseTime: number,
     stopTime: number,
   ): AudioNode | void {
-    const [osc1, osc2] = this._stereoOsc(
+    const [osc1, osc2] = this._createStereoOscillator(
       ctx,
-      Osc.Triangle,
+      "triangle",
       freq,
       1.01,
       0.7,
       gain,
     );
 
-    const filter = this._filter(ctx, Filter.Lowpass);
-    this._set(filter.frequency, freq + 400, time);
-    this._lin(
+    const filter = this._createFilter(ctx, "lowpass");
+    this._setValueAtTime(filter.frequency, freq + 400, time);
+    this._linearRampToValue(
       filter.frequency,
       freq + 1000 + velocity * 500,
       time + sustainTime,
     );
 
-    this._lfo(ctx, 0.5, 10, time, 0, stopTime, osc2.frequency);
-    this._lfo(ctx, 0.1, 400, time, 0, stopTime, filter.frequency);
+    this._createLFO(ctx, 0.5, 10, time, 0, stopTime, osc2.frequency);
+    this._createLFO(ctx, 0.1, 400, time, 0, stopTime, filter.frequency);
 
     gain.connect(filter);
 
-    this._on(time, stopTime, osc1, osc2);
+    this._scheduleNodeStartStop(time, stopTime, osc1, osc2);
 
     return filter;
   }

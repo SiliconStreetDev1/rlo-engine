@@ -4,8 +4,15 @@ import { Osc } from "../CoreSynthBase.js";
 /**
  * Synthesizer strategy for Organs using additive sine waves.
  */
+/**
+ * Simulates a tonewheel organ (like a Hammond B3) by using additive synthesis of sine waves at harmonic intervals.
+ * 
+ * @reason Acoustic Design:
+ * Encapsulates the specific Web Audio node routing and ADSR parameters
+ * required to physically model this instrument within the 13KB limit.
+ */
 export class OrganSynth extends AnalogSynthBase {
-  protected _c = { v: 0.4, a: 0.01, r: 0.05 };
+  protected _envelopeConfig = { _peakVelocity: 0.4, _attackTimeSeconds: 0.01, _releaseTimeSeconds: 0.05 };
 
   protected _setupSynthesis(
     ctx: AudioContext,
@@ -17,20 +24,20 @@ export class OrganSynth extends AnalogSynthBase {
     releaseTime: number,
     stopTime: number,
   ): AudioNode | void {
-    const osc1 = this._osc(ctx, Osc.Sine, freq, gain);
-    const gain2 = this._gain(ctx, 0.5, gain);
-    const osc2 = this._osc(ctx, Osc.Sine, freq * 2, gain2);
-    const gain3 = this._gain(ctx, 0.25, gain);
-    const osc3 = this._osc(ctx, Osc.Sine, freq * 3, gain3);
+    const osc1 = this._createOscillator(ctx, "sine", freq, gain);
+    const gain2 = this._createGain(ctx, 0.5, gain);
+    const osc2 = this._createOscillator(ctx, "sine", freq * 2, gain2);
+    const gain3 = this._createGain(ctx, 0.25, gain);
+    const osc3 = this._createOscillator(ctx, "sine", freq * 3, gain3);
 
-    const rotaryNode = this._gain(ctx, 0.7);
-    this._lfo(ctx, 6.5, 0.3, time, 0, stopTime, rotaryNode.gain);
+    const rotaryNode = this._createGain(ctx, 0.7);
+    this._createLFO(ctx, 6.5, 0.3, time, 0, stopTime, rotaryNode.gain);
 
     gain.connect(rotaryNode);
 
-    this._transient(
+    this._createTransient(
       ctx,
-      Osc.Square,
+      "square",
       4000,
       rotaryNode,
       time,
@@ -38,7 +45,7 @@ export class OrganSynth extends AnalogSynthBase {
       0.015,
     );
 
-    this._on(time, stopTime, osc1, osc2, osc3);
+    this._scheduleNodeStartStop(time, stopTime, osc1, osc2, osc3);
 
     return rotaryNode;
   }

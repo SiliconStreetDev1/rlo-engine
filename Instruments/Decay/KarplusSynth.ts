@@ -1,9 +1,16 @@
-import { CoreSynthBase, Filter } from "../CoreSynthBase.js";
+import { CoreSynthBase, Filter, hasStrictGC } from "../CoreSynthBase.js";
 
 /**
  * Synthesizer strategy for Karplus-Strong physical modeling.
  * Uses a noise burst fed into a tuned delay line with a feedback filter
  * to accurately simulate the physics of plucked strings (Acoustic Guitar, Harp).
+ */
+/**
+ * Implements the Karplus-Strong string synthesis algorithm using a short noise burst fed through a tightly tuned feedback delay line.
+ * 
+ * @reason Acoustic Design:
+ * Encapsulates the specific Web Audio node routing and ADSR parameters
+ * required to physically model this instrument within the 13KB limit.
  */
 export class KarplusSynth extends CoreSynthBase {
   public _playNote(
@@ -34,21 +41,21 @@ export class KarplusSynth extends CoreSynthBase {
     delay.delayTime.value = delayTime;
 
     // 3. The Body Damping (Lowpass filter inside the feedback loop to absorb high frequencies)
-    const filter = this._filter(ctx, Filter.Lowpass);
+    const filter = this._createFilter(ctx, "lowpass");
     filter.frequency.value = Math.min(22000, freq * 6);
 
     // 4. The Tension (Feedback gain)
-    const feedback = this._gain(ctx, 0.98); // Higher value = longer ring time
+    const feedback = this._createGain(ctx, 0.98); // Higher value = longer ring time
 
     burst.connect(delay).connect(filter).connect(feedback).connect(delay);
 
-    const output = this._gain(ctx, 0, masterGain);
-    this._set(output.gain, 1, time);
-    this._exp(output.gain, 0.001, time + duration);
+    const output = this._createGain(ctx, 0, masterGain);
+    this._setValueAtTime(output.gain, 1, time);
+    this._exponentialRampToValue(output.gain, 0.001, time + duration);
 
     delay.connect(output);
-    this._on(time, time + duration, burst);
+    this._scheduleNodeStartStop(time, time + duration, burst);
 
-    this._gc(ctx, time, time + duration + 3.0, output, delay, filter, feedback);
+    if (hasStrictGC) this._scheduleNodeDisposal(ctx, time, time + duration + 3.0, output, delay, filter, feedback);
   }
 }

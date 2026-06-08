@@ -1,13 +1,22 @@
-import { CoreSynthBase } from "../CoreSynthBase.js";
+import { CoreSynthBase, hasStrictGC } from "../CoreSynthBase.js";
 
-export type AnalogCfg = { v: number; a: number; r: number };
+export type AnalogCfg = { _peakVelocity: number; _attackTimeSeconds: number; _releaseTimeSeconds: number; _maxDurationSeconds?: number };
 
 /**
- * Abstract base class for sustained analog synthesizers.
- * Handles GainNode creation, Nyquist safety limits, and ADSR volume envelopes.
+ * Synthesizer instrument implementation.
+ * 
+ * @reason Acoustic Design:
+ * Encapsulates the specific Web Audio node routing and ADSR parameters
+ * required to physically model this instrument within the 13KB limit.
+ * 
+ * @reason Separation of Sustained vs Decaying Physics:
+ * Synthesizers like an Organ will sustain at peak volume infinitely as long as the key is held,
+ * whereas a Piano will physically decay to silence even if the key remains held down. 
+ * This base class encapsulates the mathematical ADSR envelope logic specifically for 
+ * infinite-sustain physics, ensuring derived classes only need to define the timbre (Oscillators/Filters).
  */
 export abstract class AnalogSynthBase extends CoreSynthBase {
-  protected _c: AnalogCfg = { v: 0.5, a: 0.05, r: 0.1 };
+  protected _envelopeConfig: AnalogCfg = { _peakVelocity: 0.5, _attackTimeSeconds: 0.05, _releaseTimeSeconds: 0.1, _maxDurationSeconds: 10.0 };
 
   public _playNote(
     ctx: AudioContext,
@@ -19,17 +28,18 @@ export abstract class AnalogSynthBase extends CoreSynthBase {
   ): void {
     const gain = ctx.createGain();
 
-    const c = this._cfg(duration);
-    const peakVol = Math.max(0.001, velocity * c.v);
+    const c = this._getEnvelopeConfig(duration);
+    const peakVol = Math.max(0.001, velocity * c._peakVelocity);
+    const safeDuration = c._maxDurationSeconds ? Math.min(duration, c._maxDurationSeconds) : duration;
 
-    this._set(gain.gain, 0, time);
-    this._lin(gain.gain, peakVol, time + c.a);
+    this._setValueAtTime(gain.gain, 0, time);
+    this._linearRampToValue(gain.gain, peakVol, time + c._attackTimeSeconds);
 
-    const sustainTime = Math.max(c.a, duration);
-    this._set(gain.gain, peakVol, time + sustainTime);
-    this._lin(gain.gain, 0.001, time + sustainTime + c.r);
+    const sustainTime = Math.max(c._attackTimeSeconds, safeDuration);
+    this._setValueAtTime(gain.gain, peakVol, time + sustainTime);
+    this._linearRampToValue(gain.gain, 0.001, time + sustainTime + c._releaseTimeSeconds);
 
-    const stopTime = time + sustainTime + c.r;
+    const stopTime = time + sustainTime + c._releaseTimeSeconds;
 
     const output = this._setupSynthesis(
       ctx,
@@ -38,17 +48,17 @@ export abstract class AnalogSynthBase extends CoreSynthBase {
       freq,
       velocity,
       sustainTime,
-      c.r,
+      c._releaseTimeSeconds,
       stopTime,
     );
 
     const finalNode = output || gain;
     finalNode.connect(masterGain);
-    this._gc(ctx, time, stopTime + 0.1, finalNode);
+    if (hasStrictGC) this._scheduleNodeDisposal(ctx, time, stopTime + 0.1, finalNode);
   }
 
-  protected _cfg(d: number): AnalogCfg {
-    return this._c;
+  protected _getEnvelopeConfig(_decayTimeSeconds: number): AnalogCfg {
+    return this._envelopeConfig;
   }
 
   /**

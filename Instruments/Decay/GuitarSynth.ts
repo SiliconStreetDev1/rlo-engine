@@ -1,11 +1,18 @@
 import { DecaySynthBase } from "./DecaySynthBase.js";
-import { Osc, Filter } from "../CoreSynthBase.js";
+import {} from "../CoreSynthBase.js";
 
 /**
  * Synthesizer strategy for Acoustic Guitars using a plucked sawtooth.
  */
+/**
+ * Simulates an acoustic guitar pluck using the Karplus-Strong algorithm or filtered sawtooth impulses.
+ * 
+ * @reason Acoustic Design:
+ * Encapsulates the specific Web Audio node routing and ADSR parameters
+ * required to physically model this instrument within the 13KB limit.
+ */
 export class GuitarSynth extends DecaySynthBase {
-  protected _c = { v: 0.6, a: 0.02, d: 0.2, m: 4.0 };
+  protected _envelopeConfig = { _peakVelocity: 0.6, _attackTimeSeconds: 0.02, _decayTimeSeconds: 0.2, _maxDurationSeconds: 4.0 };
 
   protected _setupSynthesis(
     ctx: AudioContext,
@@ -18,25 +25,25 @@ export class GuitarSynth extends DecaySynthBase {
     stopTime: number,
   ): AudioNode | void {
     /** Bright attack that quickly muffles as the acoustic string loses kinetic energy */
-    const filter = this._filterSweep(
+    const filter = this._createFilterSweep(
       ctx,
-      Filter.Lowpass,
+      "lowpass",
       2000 + velocity * 1000,
       200,
       time,
       safeDuration,
     );
 
-    const osc = this._osc(ctx, Osc.Sawtooth, 0, gain);
-    this._set(osc.frequency, freq * 1.02, time);
-    this._exp(osc.frequency, freq, time + 0.05);
+    const osc = this._createOscillator(ctx, "sawtooth", 0, gain);
+    this._setValueAtTime(osc.frequency, freq * 1.02, time);
+    this._exponentialRampToValue(osc.frequency, freq, time + 0.05);
 
     gain.connect(filter);
 
     /** Plectrum Pluck: the sharp, plastic click of a pick striking a steel string */
-    this._transient(
+    this._createTransient(
       ctx,
-      Osc.Square,
+      "square",
       3500,
       masterGain,
       time,
@@ -44,7 +51,7 @@ export class GuitarSynth extends DecaySynthBase {
       0.015,
     );
 
-    this._on(time, stopTime, osc);
+    this._scheduleNodeStartStop(time, stopTime, osc);
 
     return filter;
   }

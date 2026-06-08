@@ -13,6 +13,20 @@ export interface CompileStats {
 
 const trunc3 = (val: number): number => Math.round(val * 1000) / 1000;
 
+/**
+ * Compiles a raw MIDI buffer into an optimized RloData structure.
+ * 
+ * @reason Why do we write a custom parser instead of using standard Web Audio MIDI playback?
+ * 1. Web Audio has no native MIDI decoder.
+ * 2. MIDI files often contain overlapping notes, redundant control changes, and
+ *    extreme rhythmic complexity. By parsing this server-side (Node.js/Compiler),
+ *    we flatten all CC/Velocity math into absolute pre-calculated floats. 
+ *    This completely removes runtime logic from the game client, allowing the
+ *    RLO Engine to play the sequence with zero CPU overhead for event handling.
+ * 
+ * @param midiBuffer The raw `.mid` file byte buffer.
+ * @param noTrim If false, shifts all note timestamps so the sequence starts exactly at t=0, removing leading silence.
+ */
 export function convertMidiToRlo(
   midiBuffer: Buffer,
   noTrim: boolean = false,
@@ -125,6 +139,13 @@ export function convertMidiToRlo(
     return a.i - b.i;
   });
 
+  /**
+   * @reason Polyphony & Overlap Flattening
+   * If a producer accidentally stacks three identical MIDI notes on the same tick,
+   * synthesizing all three will cause massive Phase Cancellation or audio clipping.
+   * This deduplication step ensures only the note with the highest velocity and 
+   * longest duration survives.
+   */
   const uniqueNotes: typeof noteStructs = [];
   noteStructs.forEach((n) => {
     if (uniqueNotes.length > 0) {

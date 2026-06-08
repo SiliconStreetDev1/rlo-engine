@@ -1,12 +1,19 @@
 import { AnalogSynthBase, AnalogCfg } from "./AnalogSynthBase.js";
-import { Osc, Filter } from "../CoreSynthBase.js";
+import {} from "../CoreSynthBase.js";
 
 /**
  * Synthesizer strategy for Reese/Wobble Bass.
  * Uses heavily detuned sawtooths and an LFO-driven lowpass filter.
  */
+/**
+ * A staple of Drum & Bass music, this uses two heavily detuned sawtooth waves to create a thick, phasing, and wide bass tone.
+ * 
+ * @reason Acoustic Design:
+ * Encapsulates the specific Web Audio node routing and ADSR parameters
+ * required to physically model this instrument within the 13KB limit.
+ */
 export class ReeseBassSynth extends AnalogSynthBase {
-  protected _c = { v: 0.7, a: 0.05, r: 0.2 };
+  protected _envelopeConfig = { _peakVelocity: 0.7, _attackTimeSeconds: 0.05, _releaseTimeSeconds: 0.2 };
 
   protected _setupSynthesis(
     ctx: AudioContext,
@@ -18,22 +25,22 @@ export class ReeseBassSynth extends AnalogSynthBase {
     releaseTime: number,
     stopTime: number,
   ): AudioNode | void {
-    const filter = this._filter(ctx, Filter.Lowpass);
-    this._set(filter.frequency, freq * 2, time);
+    const filter = this._createFilter(ctx, "lowpass");
+    this._setValueAtTime(filter.frequency, freq * 2, time);
 
     // Wobble LFO: syncs roughly to tempo (e.g. 1/8th notes ~4-8 Hz)
-    this._lfo(ctx, 6, freq * 3, time, 0, stopTime, filter.frequency);
+    this._createLFO(ctx, 6, freq * 3, time, 0, stopTime, filter.frequency);
 
     // Deep, phasing detune
-    const [osc1, osc2] = this._stereoOsc(
+    const [osc1, osc2] = this._createStereoOscillator(
       ctx,
-      Osc.Sawtooth,
+      "sawtooth",
       freq / 2,
       1.015,
       0.4,
       filter,
     );
     filter.connect(gain);
-    this._on(time, stopTime, osc1, osc2);
+    this._scheduleNodeStartStop(time, stopTime, osc1, osc2);
   }
 }

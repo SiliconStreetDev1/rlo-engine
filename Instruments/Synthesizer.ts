@@ -1,7 +1,15 @@
 import { ISynthInstrument } from "./ISynthInstrument.js";
 
+declare const __ENABLE_MIDI_DEBUG__: boolean;
+const hasMidiDebug = typeof __ENABLE_MIDI_DEBUG__ !== "undefined" ? __ENABLE_MIDI_DEBUG__ : false;
+
 /**
  * Handles routing and synthesis of different instrument types.
+ * 
+ * @reason Separation of Concerns:
+ * The `RLOCore` is strictly responsible for timing and track decoding.
+ * This class is strictly responsible for mapping Instrument IDs to their specific
+ * synthesis classes, applying Key Tracking math, and managing the polyphonic fan-out.
  */
 export class Synthesizer {
   private _ctx: AudioContext;
@@ -35,7 +43,7 @@ export class Synthesizer {
 
     const instrument = this._instruments[instrumentId] || this._instruments[0];
 
-    if ((globalThis as any).DEBUG_MIDI) {
+    if (hasMidiDebug) {
       console.log(
         `[MIDI Debug] Instr ID: ${instrumentId} | Class: ${instrument?.constructor.name || "Unknown"} | Freq: ${freq.toFixed(2)}Hz | Vel: ${velocity.toFixed(2)} | Dur: ${duration.toFixed(2)}s | Time: ${time.toFixed(2)}s`,
       );

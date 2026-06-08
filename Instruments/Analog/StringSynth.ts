@@ -1,5 +1,5 @@
 import { AnalogSynthBase } from "./AnalogSynthBase.js";
-import { Osc, Filter } from "../CoreSynthBase.js";
+import {} from "../CoreSynthBase.js";
 
 /**
  * Synthesizer strategy for String and Pad instruments using detuned oscillators.
@@ -19,16 +19,16 @@ export class StringSynth extends AnalogSynthBase {
     releaseTime: number,
     stopTime: number,
   ): AudioNode | void {
-    const [osc1, osc2] = this._stereoOsc(
+    const [osc1, osc2] = this._createStereoOscillator(
       ctx,
-      Osc.Sawtooth,
+      "sawtooth",
       freq,
       1.005,
       0.6,
       gain,
     );
 
-    const lfo = this._lfo(
+    const lfo = this._createLFO(
       ctx,
       4.5,
       freq * 0.012,
@@ -39,9 +39,9 @@ export class StringSynth extends AnalogSynthBase {
     );
     lfo.connect(osc2.frequency);
 
-    const filter = this._filterSweep(
+    const filter = this._createFilterSweep(
       ctx,
-      Filter.Lowpass,
+      "lowpass",
       freq + 1200 + velocity * 1000,
       freq + 800,
       time,
@@ -50,7 +50,7 @@ export class StringSynth extends AnalogSynthBase {
 
     gain.connect(filter);
 
-    this._on(time, stopTime, osc1, osc2);
+    this._scheduleNodeStartStop(time, stopTime, osc1, osc2);
 
     return filter;
   }

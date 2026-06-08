@@ -5,8 +5,15 @@ import { Osc } from "../CoreSynthBase.js";
  * Synthesizer strategy for Chromatic Percussion (Bells, Marimba, Vibraphone).
  * Characterized by a pure tone with a very fast attack and immediate decay.
  */
+/**
+ * Emulates struck melodic instruments like a Glockenspiel or Marimba using rapid decay envelopes and metallic overtones.
+ * 
+ * @reason Acoustic Design:
+ * Encapsulates the specific Web Audio node routing and ADSR parameters
+ * required to physically model this instrument within the 13KB limit.
+ */
 export class ChromaticPercussionSynth extends DecaySynthBase {
-  protected _c = { v: 0.7, a: 0.005, d: 0.5, m: 6.0 };
+  protected _envelopeConfig = { _peakVelocity: 0.7, _attackTimeSeconds: 0.005, _decayTimeSeconds: 0.5, _maxDurationSeconds: 6.0 };
 
   protected _setupSynthesis(
     ctx: AudioContext,
@@ -18,17 +25,17 @@ export class ChromaticPercussionSynth extends DecaySynthBase {
     safeDuration: number,
     stopTime: number,
   ): AudioNode | void {
-    const osc = this._osc(ctx, Osc.Sine, 0, gain);
-    this._set(osc.frequency, freq * 1.1, time);
-    this._exp(osc.frequency, freq, time + 0.02);
+    const osc = this._createOscillator(ctx, "sine", 0, gain);
+    this._setValueAtTime(osc.frequency, freq * 1.1, time);
+    this._exponentialRampToValue(osc.frequency, freq, time + 0.02);
 
-    const overtoneGain = this._gain(ctx, 0, masterGain);
-    this._set(overtoneGain.gain, Math.max(0.001, velocity * 0.25), time);
-    this._exp(overtoneGain.gain, 0.001, time + safeDuration);
-    const overtone = this._osc(ctx, Osc.Sine, freq * 2.76, overtoneGain);
+    const overtoneGain = this._createGain(ctx, 0, masterGain);
+    this._setValueAtTime(overtoneGain.gain, Math.max(0.001, velocity * 0.25), time);
+    this._exponentialRampToValue(overtoneGain.gain, 0.001, time + safeDuration);
+    const overtone = this._createOscillator(ctx, "sine", freq * 2.76, overtoneGain);
 
     overtoneGain.connect(masterGain);
 
-    this._on(time, stopTime, osc, overtone);
+    this._scheduleNodeStartStop(time, stopTime, osc, overtone);
   }
 }

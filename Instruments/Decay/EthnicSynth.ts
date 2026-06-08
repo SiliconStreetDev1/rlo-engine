@@ -1,12 +1,19 @@
 import { DecaySynthBase } from "./DecaySynthBase.js";
-import { Osc, Filter } from "../CoreSynthBase.js";
+import {} from "../CoreSynthBase.js";
 
 /**
  * Synthesizer strategy for Ethnic instruments (Sitar, Shamisen, Koto).
  * Uses a bandpass filter over a square wave to emulate a hollow, plucked resonator.
  */
+/**
+ * A generalized plucked/struck string synthesizer meant to emulate instruments like a Sitar or Koto.
+ * 
+ * @reason Acoustic Design:
+ * Encapsulates the specific Web Audio node routing and ADSR parameters
+ * required to physically model this instrument within the 13KB limit.
+ */
 export class EthnicSynth extends DecaySynthBase {
-  protected _c = { v: 0.6, a: 0.02, d: 0.1, m: 4.0 };
+  protected _envelopeConfig = { _peakVelocity: 0.6, _attackTimeSeconds: 0.02, _decayTimeSeconds: 0.1, _maxDurationSeconds: 4.0 };
 
   protected _setupSynthesis(
     ctx: AudioContext,
@@ -18,13 +25,13 @@ export class EthnicSynth extends DecaySynthBase {
     safeDuration: number,
     stopTime: number,
   ): AudioNode | void {
-    const osc = this._osc(ctx, Osc.Square, 0, gain);
-    this._set(osc.frequency, freq * 1.05, time);
-    this._exp(osc.frequency, freq, time + 0.08);
+    const osc = this._createOscillator(ctx, "square", 0, gain);
+    this._setValueAtTime(osc.frequency, freq * 1.05, time);
+    this._exponentialRampToValue(osc.frequency, freq, time + 0.08);
 
-    const filter = this._filterSweep(
+    const filter = this._createFilterSweep(
       ctx,
-      Filter.Bandpass,
+      "bandpass",
       freq * 2.5,
       freq,
       time,
@@ -34,6 +41,6 @@ export class EthnicSynth extends DecaySynthBase {
 
     filter.connect(gain);
 
-    this._on(time, stopTime, osc);
+    this._scheduleNodeStartStop(time, stopTime, osc);
   }
 }

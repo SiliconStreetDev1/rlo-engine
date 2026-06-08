@@ -8,11 +8,22 @@ const hasTranspiler =
  * Universal translator for handling RLO data formats.
  * Converts between Human AoS (Array of Structures), Intermediate SoA (Structure of Arrays),
  * and highly compressed binary buffers.
+ * 
+ * @reason Why Structure of Arrays (SoA) and Delta-Time?
+ * By decoupling a note into flat typed arrays (time, duration, frequency, velocity, instrument)
+ * we allow gzip/deflate algorithms to identify massive byte repetition. For example, if a 
+ * hi-hat plays on the exact same instrument ID and velocity for 50 notes, SoA groups those 50
+ * identical bytes contiguously in memory, allowing gzip to compress them down to literally 1 or 2 bytes.
+ * Converting absolute time to delta-time serves the same purpose: instead of constantly increasing 
+ * time signatures, rhythmic music will yield contiguous identical delta-time bytes which gzip dominates.
  */
-export class RLOTranspiler {
-  /** Converts standard interleaved JSON into Delta-Timed Structure of Arrays */
-  static _encodeToSoA(humanJson: RloData, fullRangeFreq: boolean = false) {
-    if (!hasTranspiler) return null as unknown as typeof soa;
+/** 
+ * Converts standard interleaved JSON into Delta-Timed Structure of Arrays.
+ * @param humanJson The flat-packed JSON array.
+ * @param fullRangeFreq If true, writes raw 32-bit floats. If false, aggressively quantizes to 8-bit MIDI scale.
+ */
+export function encodeToSoA(humanJson: RloData, fullRangeFreq: boolean = false) {
+  if (!hasTranspiler) return null as unknown as typeof soa;
     const N = humanJson.notes.length / 5;
     const f = fullRangeFreq ? new Float32Array(N) : new Uint8Array(N);
     const t = new Uint16Array(N);
@@ -62,14 +73,20 @@ export class RLOTranspiler {
     return soa;
   }
 
-  /** Tightly packs the Delta-Timed SoA into a memory-aligned ArrayBuffer */
-  static _encodeToBinary(
-    humanJson: RloData,
-    fullRangeFreq: boolean = false,
-  ): ArrayBuffer {
-    if (!hasTranspiler) return new ArrayBuffer(0);
-    const isLittleEndian = new Uint8Array(new Uint16Array([1]).buffer)[0] === 1;
-    const soa = this._encodeToSoA(humanJson, fullRangeFreq);
+/** 
+ * Tightly packs the Delta-Timed SoA into a memory-aligned ArrayBuffer.
+ * 
+ * @reason We explicitly manage endianness via DataView for the 16-bit and 32-bit arrays
+ * to ensure that a `.rlo` file compiled on an x86 machine (Little Endian) plays flawlessly
+ * on an ARM or obscure Big-Endian web client. 
+ */
+export function encodeToBinary(
+  humanJson: RloData,
+  fullRangeFreq: boolean = false,
+): ArrayBuffer {
+  if (!hasTranspiler) return new ArrayBuffer(0);
+  const isLittleEndian = new Uint8Array(new Uint16Array([1]).buffer)[0] === 1;
+  const soa = encodeToSoA(humanJson, fullRangeFreq);
     const N = soa.f.length;
 
     // Arrays: Time(2*N) + Dur(2*N) + Freq(1*N or 4*N) + Vel(1*N) + Inst(1*N)
@@ -114,9 +131,15 @@ export class RLOTranspiler {
     return buffer;
   }
 
-  /** Reconstructs a high-speed runtime object directly from the binary buffer */
-  static _decodeBinary(buffer: ArrayBuffer): RloData {
-    if (!hasTranspiler) return { durationSecs: 0, notes: [] };
+/** 
+ * Reconstructs a high-speed runtime object directly from the binary buffer.
+ * 
+ * @reason During decode, we pre-allocate the exact flat array size `new Array(N * 5)`.
+ * This guarantees that the V8 engine allocates contiguous memory without dynamic resizing overhead.
+ * It reconstructs absolute time by accumulating the delta-time ticks to prevent floating-point drift.
+ */
+export function decodeBinary(buffer: ArrayBuffer): RloData {
+  if (!hasTranspiler) return { durationSecs: 0, notes: new Float32Array(0) };
     const view = new DataView(buffer);
     const magic = String.fromCharCode(
       view.getUint8(0),
@@ -136,7 +159,7 @@ export class RLOTranspiler {
     const v = new Uint8Array(buffer, 12 + (isFullRange ? 8 : 5) * N, N);
     const i = new Uint8Array(buffer, 12 + (isFullRange ? 9 : 6) * N, N);
 
-    const notes: number[] = new Array(N * 5);
+    const notes = new Float32Array(N * 5);
     let currentTime = 0;
 
     for (let n = 0, ptr = 0; n < N; n++, ptr += 5) {
@@ -159,6 +182,5 @@ export class RLOTranspiler {
       notes[ptr + 4] = i[n];
     }
 
-    return { durationSecs, notes };
-  }
+  return { durationSecs, notes };
 }

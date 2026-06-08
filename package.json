@@ -1,6 +1,6 @@
 {
   "name": "rlo-engine",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "A micro-compiler and procedural Web Audio engine for web-based games.",
   "author": "Rikardt Louw",
   "license": "MIT",
