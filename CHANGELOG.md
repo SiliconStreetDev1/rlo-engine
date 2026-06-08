@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [1.1.0] - 2026-06-08
 
 ### 🚀 Major Architectural Refactor (Enterprise Standards)
-This release represents a massive architectural overhaul of the `rlo-engine`, transitioning the codebase from a monolithic architecture to a strictly modular, Enterprise-grade system, while **reducing** the final JS13k production footprint down to **2254 Bytes**!
+This release represents a massive architectural overhaul of the `rlo-engine`
 
 ### Added
 - **Formal Web Worker Metronome**: Documented and secured the C++ audio thread fallback. The Web Worker now properly avoids tab-throttling on background browsers.
