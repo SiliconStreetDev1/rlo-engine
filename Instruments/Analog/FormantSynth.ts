@@ -13,7 +13,7 @@ import {} from "../CoreSynthBase.js";
  * required to physically model this instrument within the 13KB limit.
  */
 export class FormantSynth extends AnalogSynthBase {
-  protected _envelopeConfig = { _peakVelocity: 0.8, _attackTimeSeconds: 0.1, _releaseTimeSeconds: 0.4 };
+  protected _envelopeConfig: import("./AnalogSynthBase.js").AnalogCfg = [0.8, 0.1, 0.4];
 
   protected _setupSynthesis(
     ctx: AudioContext,

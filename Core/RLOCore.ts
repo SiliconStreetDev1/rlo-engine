@@ -13,7 +13,10 @@ export interface PlaySequenceOptions {
 }
 
 declare const __ENABLE_WORKER_METRONOME__: boolean;
+declare const __ENABLE_MACRO_EXPANDER__: boolean;
+
 const hasWorkerMetronome = typeof __ENABLE_WORKER_METRONOME__ !== "undefined" ? __ENABLE_WORKER_METRONOME__ : false;
+const hasMacroExpander = typeof __ENABLE_MACRO_EXPANDER__ !== "undefined" ? __ENABLE_MACRO_EXPANDER__ : true;
 
 /**
  * Base Engine Core responsible for the precise scheduling and timing of Web Audio nodes.
@@ -155,7 +158,33 @@ export class RLOCore {
     let lastScheduleTime = this._now;
     let loopOffsetSecs = 0;
     let notePtr = 0;
-    const notes = track.notes;
+    let notes = track.notes;
+
+    if (hasMacroExpander) {
+      let m = false;
+      for (let i = 4; i < notes.length; i += 5) {
+        if (notes[i] === 255) { m = true; break; }
+      }
+
+      if (m) {
+        const e: number[][] = [];
+        for (let i = 0; i < notes.length; i += 5) {
+          if (notes[i+4] === 255) {
+             const s = notes[i] * 5;
+             for (let j = s; j < s + notes[i+2] * 5; j += 5) {
+               if (notes[j+4] !== 255) {
+                 e.push([ notes[j]*notes[i+3], notes[j+1]+notes[i+1], notes[j+2], notes[j+3], notes[j+4] ]);
+               }
+             }
+          } else {
+             e.push([ notes[i], notes[i+1], notes[i+2], notes[i+3], notes[i+4] ]);
+          }
+        }
+        e.sort((a, b) => a[1] - b[1]);
+        track.notes = notes = new Float32Array(e.flat());
+      }
+    }
+
     const len = notes.length;
 
     const schedule = () => {
@@ -178,9 +207,10 @@ export class RLOCore {
         // Duck the volume briefly to hide the 0.5s lookahead buffer overlap
         const duckGain = destination as GainNode;
         if (duckGain.gain) {
-           duckGain.gain.cancelScheduledValues(currentPhysicalTime);
-           duckGain.gain.setValueAtTime(0.001, currentPhysicalTime);
-           duckGain.gain.exponentialRampToValueAtTime(this._volume, currentPhysicalTime + 0.5);
+           const g = duckGain.gain;
+           g.cancelScheduledValues(currentPhysicalTime);
+           g.setValueAtTime(0.001, currentPhysicalTime);
+           g.exponentialRampToValueAtTime(this._volume, currentPhysicalTime + 0.5);
         }
       } else {
         this._trkT += deltaPhysical * this.playbackRate;
@@ -196,8 +226,9 @@ export class RLOCore {
         // The "Lag Chord" drop threshold:
         // If a thread freeze occurred, drop notes that are more than 150ms in the past
         if (this._trkT - noteTrackTime <= 0.15 * this.playbackRate) {
+          const p = notePtr;
           const notePhysicalTime = currentPhysicalTime + Math.max(0, (noteTrackTime - this._trkT) / this.playbackRate);
-          synthesizer._playNote(notes[notePtr + 4], notePhysicalTime, notes[notePtr], notes[notePtr + 2] / this.playbackRate, notes[notePtr + 3]);
+          synthesizer._playNote(notes[p + 4], notePhysicalTime, notes[p], notes[p + 2] / this.playbackRate, notes[p + 3]);
         }
         notePtr += 5;
       }

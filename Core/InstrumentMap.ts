@@ -14,11 +14,9 @@ export const SilentSynth: ISynthInstrument = {
  * avoiding the need for complex fuzzy-matching loops.
  */
 export function createDirectMap(assignments: { synth: ISynthInstrument; ids: number[] }[]): ISynthInstrument[] {
-  const mapArray = new Array(129).fill(null);
-  assignments.forEach((a) => {
-    a.ids.forEach((id) => (mapArray[id] = a.synth));
-  });
-  return mapArray;
+  const m: ISynthInstrument[] = [];
+  assignments.forEach((a) => a.ids.forEach((id) => (m[id] = a.synth)));
+  return m;
 }
 
 /**

@@ -12,7 +12,7 @@ import {} from "../CoreSynthBase.js";
  * required to physically model this instrument within the 13KB limit.
  */
 export class PianoSynth extends DecaySynthBase {
-  protected _envelopeConfig = { _peakVelocity: 0.8, _attackTimeSeconds: 0.015, _decayTimeSeconds: 0.1, _maxDurationSeconds: 5.0 };
+  protected _envelopeConfig: import("./DecaySynthBase.js").DecayCfg = [0.8, 0.015, 0.1, 5.0];
 
   protected _setupSynthesis(
     ctx: AudioContext,

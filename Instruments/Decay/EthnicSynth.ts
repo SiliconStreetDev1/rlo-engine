@@ -13,7 +13,7 @@ import {} from "../CoreSynthBase.js";
  * required to physically model this instrument within the 13KB limit.
  */
 export class EthnicSynth extends DecaySynthBase {
-  protected _envelopeConfig = { _peakVelocity: 0.6, _attackTimeSeconds: 0.02, _decayTimeSeconds: 0.1, _maxDurationSeconds: 4.0 };
+  protected _envelopeConfig: import("./DecaySynthBase.js").DecayCfg = [0.6, 0.02, 0.1, 4.0];
 
   protected _setupSynthesis(
     ctx: AudioContext,

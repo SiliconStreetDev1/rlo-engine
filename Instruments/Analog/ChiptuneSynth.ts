@@ -13,7 +13,7 @@ import { Osc } from "../CoreSynthBase.js";
  * required to physically model this instrument within the 13KB limit.
  */
 export class ChiptuneSynth extends AnalogSynthBase {
-  protected _envelopeConfig = { _peakVelocity: 0.4, _attackTimeSeconds: 0.005, _releaseTimeSeconds: 0.05 };
+  protected _envelopeConfig: import("./AnalogSynthBase.js").AnalogCfg = [0.4, 0.005, 0.05];
 
   protected _setupSynthesis(
     ctx: AudioContext,

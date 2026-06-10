@@ -13,7 +13,7 @@ import {} from "../CoreSynthBase.js";
  * required to physically model this instrument within the 13KB limit.
  */
 export class SlapBassSynth extends DecaySynthBase {
-  protected _envelopeConfig = { _peakVelocity: 0.9, _attackTimeSeconds: 0.005, _decayTimeSeconds: 0.15, _maxDurationSeconds: 3.0 }; // Ultra-fast attack for the slap
+  protected _envelopeConfig: import("./DecaySynthBase.js").DecayCfg = [0.9, 0.005, 0.15, 3.0]; // Ultra-fast attack for the slap
 
   protected _setupSynthesis(
     ctx: AudioContext,

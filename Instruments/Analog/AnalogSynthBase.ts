@@ -1,6 +1,6 @@
 import { CoreSynthBase, hasStrictGC } from "../CoreSynthBase.js";
 
-export type AnalogCfg = { _peakVelocity: number; _attackTimeSeconds: number; _releaseTimeSeconds: number; _maxDurationSeconds?: number };
+export type AnalogCfg = [number, number, number, number?];
 
 /**
  * Synthesizer instrument implementation.
@@ -16,7 +16,7 @@ export type AnalogCfg = { _peakVelocity: number; _attackTimeSeconds: number; _re
  * infinite-sustain physics, ensuring derived classes only need to define the timbre (Oscillators/Filters).
  */
 export abstract class AnalogSynthBase extends CoreSynthBase {
-  protected _envelopeConfig: AnalogCfg = { _peakVelocity: 0.5, _attackTimeSeconds: 0.05, _releaseTimeSeconds: 0.1, _maxDurationSeconds: 10.0 };
+  protected _envelopeConfig: AnalogCfg = [0.5, 0.05, 0.1, 10.0];
 
   public _playNote(
     ctx: AudioContext,
@@ -29,17 +29,17 @@ export abstract class AnalogSynthBase extends CoreSynthBase {
     const gain = ctx.createGain();
 
     const c = this._getEnvelopeConfig(duration);
-    const peakVol = Math.max(0.001, velocity * c._peakVelocity);
-    const safeDuration = c._maxDurationSeconds ? Math.min(duration, c._maxDurationSeconds) : duration;
+    const peakVol = Math.max(0.001, velocity * c[0]);
+    const safeDuration = c[3] ? Math.min(duration, c[3]) : duration;
 
     this._setValueAtTime(gain.gain, 0, time);
-    this._linearRampToValue(gain.gain, peakVol, time + c._attackTimeSeconds);
+    this._linearRampToValue(gain.gain, peakVol, time + c[1]);
 
-    const sustainTime = Math.max(c._attackTimeSeconds, safeDuration);
+    const sustainTime = Math.max(c[1], safeDuration);
     this._setValueAtTime(gain.gain, peakVol, time + sustainTime);
-    this._linearRampToValue(gain.gain, 0.001, time + sustainTime + c._releaseTimeSeconds);
+    this._linearRampToValue(gain.gain, 0.001, time + sustainTime + c[2]);
 
-    const stopTime = time + sustainTime + c._releaseTimeSeconds;
+    const stopTime = time + sustainTime + c[2];
 
     const output = this._setupSynthesis(
       ctx,
@@ -48,7 +48,7 @@ export abstract class AnalogSynthBase extends CoreSynthBase {
       freq,
       velocity,
       sustainTime,
-      c._releaseTimeSeconds,
+      c[2],
       stopTime,
     );
 

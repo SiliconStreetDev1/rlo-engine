@@ -13,7 +13,7 @@ import {} from "../CoreSynthBase.js";
  * required to physically model this instrument within the 13KB limit.
  */
 export class WoodwindSynth extends AnalogSynthBase {
-  protected _envelopeConfig = { _peakVelocity: 0.7, _attackTimeSeconds: 0.05, _releaseTimeSeconds: 0.1 };
+  protected _envelopeConfig: import("./AnalogSynthBase.js").AnalogCfg = [0.7, 0.05, 0.1];
 
   protected _setupSynthesis(
     ctx: AudioContext,

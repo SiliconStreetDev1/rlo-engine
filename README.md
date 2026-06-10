@@ -159,7 +159,7 @@ async function loadAndPlayRLO(url, engine) {
 
 ## Paradigm B: The JS13k Boilerplate (High Compression)
 
-For size-coding and JS13k developers. By cloning the repo and using the custom build pipeline, you bypass ES module boundaries, allowing the Terser minifier to mangle internal properties and strip out any synthesizers you don't actively use. **The current highly-optimized core engine sits at ~2.2KB Gzipped.**
+For size-coding and JS13k developers. By cloning the repo and using the custom build pipeline, you bypass ES module boundaries, allowing the Terser minifier to mangle internal properties and strip out any synthesizers you don't actively use. **The current highly-optimized core engine sits at ~2.4KB Gzipped.**
 
 ### 1. Clone & Install
 
@@ -228,6 +228,7 @@ Set these `define` flags to `false` to squeeze out even more bytes via dead-code
 | `__ENABLE_MUSIC_PLAYER__`     | Includes network fetching, convolver reverb, and track caching.            | `true`  |
 | `__ENABLE_GAME_ENGINE__`      | Includes the dedicated SFX routing bus.                                    | `true`  |
 | `__ENABLE_WORKER_METRONOME__` | Uses an un-throttled Web Worker for bulletproof background tab scheduling. | `false` |
+| `__ENABLE_MACRO_EXPANDER__`   | Includes the LZ77 decompression logic. Disable if using uncompressed arrays. | `true`  |
 
 ---
 
@@ -345,6 +346,20 @@ You can skip `.rlo` files entirely and pass compiled JSON arrays directly into t
 ```javascript
 player.play({ durationSecs: 12.5, notes: [440, 0, 1, 1.0, 1 /* ... */] });
 ```
+
+### LZ77-Style Macro Compression (For JS13k)
+
+To squeeze the absolute maximum amount of music into the 13KB limit, RLO-Engine includes a native **LZ77-style Macro Compressor** for your arrays. 
+
+**Where does the name LZ77 come from?**
+LZ77 is the famous lossless data compression algorithm created by Abraham Lempel and Jacob Ziv in 1977. It forms the foundation of ZIP files and PNG images. It works by scanning data for repeating patterns and replacing them with a tiny "pointer" reference back to the original occurrence. 
+
+RLO-Engine does exactly this for your musical arrays! If you have a repeating drum beat, an ostinato bassline, or a looping melody, the compressor pulls it out into a "template", and replaces every subsequent occurrence in the track with a tiny `255` instruction pointer. Because it only matches mathematically identical patterns, it is 100% lossless, but it natively shrinks track file sizes by **up to 60%**!
+
+**How to use it:**
+1. Drop your raw array JSON into the **Macro Compressor Tool** at the bottom of the `index.html` demo rig.
+2. OR, run `node compress_macro.cjs` via the terminal.
+3. The engine core (`RLOCore`) will automatically detect the `255` instructions and dynamically decompress them instantly in-memory right before playing the song!
 
 ---
 

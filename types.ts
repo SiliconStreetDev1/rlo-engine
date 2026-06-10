@@ -10,6 +10,12 @@
 export const PERCUSSION_INSTRUMENT_ID = 128;
 
 /**
+ * Macro Instrument ID triggers array instancing (copying chunks of notes).
+ * Format: `[SourceIndex, TimeOffset, NoteCount, PitchMultiplier, MACRO_INSTRUMENT_ID]`
+ */
+export const MACRO_INSTRUMENT_ID = 255;
+
+/**
  * Core data structure for a compiled RLO track.
  * Represents the absolute minimum data required to synthesize music.
  */

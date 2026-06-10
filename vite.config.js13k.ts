@@ -34,6 +34,7 @@ export default defineConfig({
     __ENABLE_NOTE_PARSER__: false, // Strip String parsing (e.g., "C#5")
     __ENABLE_STRICT_GC__: false, // Strip AudioNode Garbage Collection
     __ENABLE_MIDI_DEBUG__: false, // Strip the MIDI logging logic
+    __ENABLE_MACRO_EXPANDER__: true, // Strip the LZ77 decompression logic
   },
   build: {
     target: "es2020",

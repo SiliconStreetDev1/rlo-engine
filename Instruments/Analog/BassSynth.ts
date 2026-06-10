@@ -12,7 +12,7 @@ import {} from "../CoreSynthBase.js";
  * required to physically model this instrument within the 13KB limit.
  */
 export class BassSynth extends DecaySynthBase {
-  protected _envelopeConfig = { _peakVelocity: 0.8, _attackTimeSeconds: 0.05, _decayTimeSeconds: 0.1, _maxDurationSeconds: 4.0 };
+  protected _envelopeConfig: import("../Decay/DecaySynthBase.js").DecayCfg = [0.8, 0.05, 0.1, 4.0];
 
   protected _setupSynthesis(
     ctx: AudioContext,

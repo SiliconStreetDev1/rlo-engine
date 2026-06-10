@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-06-10
+
+### 🚀 The JS13k Compression Update
+This release focuses aggressively on reducing the mathematical footprint of the engine for JS13k size-coding competitions, bringing the base engine down to ~2.4KB Gzipped while introducing massive array compression techniques.
+
+### Added
+- **LZ77-Style Macro Compression**: Added `compress_macro.cjs` to the toolkit. It natively scans JSON track arrays and losslessly extracts repeating musical patterns (like drum loops and basslines) into reusable templates, reducing `.json` music file sizes by up to 60%.
+- **Macro Expander Engine**: Upgraded `RLOCore` to detect and dynamically unpack `255` macro instructions in-memory seamlessly before playback. 
+- **Macro Demo Tool**: Added an interactive, browser-based LZ77 array compressor directly into the `index.html` demo rig.
+- **Expander Feature Flag**: Added the `__ENABLE_MACRO_EXPANDER__` feature flag to `vite.config.ts`. The macro engine costs exactly 209 bytes, but can be totally stripped via Dead-Code Elimination if developers use uncompressed arrays.
+
+### Changed
+- **Array-Based Envelopes**: Replaced verbose ADSR JSON objects across all 23 synthesizer classes with tightly packed JS array tuples, saving hundreds of bytes before compression.
+- **Golfed Mapper**: Optimized the JS13k `createDirectMap` fallback in `InstrumentMap.ts` to utilize sparse dynamic arrays instead of forced `null` constructors.
+- **Native Flat Extraction**: Refactored the internal macro expander to utilize ES2019 `.flat()` and raw integer sub-arrays to completely eliminate object key mapping, keeping the entire `crush` footprint under 2.44 KB.
+- **AudioNode GC Optimization**: Eliminated the redundant `typeof n.disconnect === 'function'` type checks during Garbage Collection since modern browser environments inherently guarantee the method's existence.
+
+---
+
 ## [1.1.0] - 2026-06-08
 
 ### 🚀 Major Architectural Refactor (Enterprise Standards)

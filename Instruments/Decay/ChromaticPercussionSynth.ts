@@ -13,7 +13,7 @@ import { Osc } from "../CoreSynthBase.js";
  * required to physically model this instrument within the 13KB limit.
  */
 export class ChromaticPercussionSynth extends DecaySynthBase {
-  protected _envelopeConfig = { _peakVelocity: 0.7, _attackTimeSeconds: 0.005, _decayTimeSeconds: 0.5, _maxDurationSeconds: 6.0 };
+  protected _envelopeConfig: import("./DecaySynthBase.js").DecayCfg = [0.7, 0.005, 0.5, 6.0];
 
   protected _setupSynthesis(
     ctx: AudioContext,

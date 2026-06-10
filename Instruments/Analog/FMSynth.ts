@@ -14,7 +14,7 @@ import { Osc } from "../CoreSynthBase.js";
  * required to physically model this instrument within the 13KB limit.
  */
 export class FMSynth extends AnalogSynthBase {
-  protected _envelopeConfig = { _peakVelocity: 0.6, _attackTimeSeconds: 0.01, _releaseTimeSeconds: 0.1 };
+  protected _envelopeConfig: import("./AnalogSynthBase.js").AnalogCfg = [0.6, 0.01, 0.1];
 
   protected _setupSynthesis(
     ctx: AudioContext,

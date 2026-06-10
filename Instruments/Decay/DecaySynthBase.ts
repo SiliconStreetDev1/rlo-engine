@@ -1,6 +1,6 @@
 import { CoreSynthBase, hasStrictGC } from "../CoreSynthBase.js";
 
-export type DecayCfg = { _peakVelocity: number; _attackTimeSeconds: number; _decayTimeSeconds: number; _maxDurationSeconds: number };
+export type DecayCfg = [number, number, number, number]; // [peakVelocity, attackTimeSeconds, decayTimeSeconds, maxDurationSeconds]
 
 /**
  * Abstract base class for plucked, struck, and decaying synthesizers (e.g. Pianos, Guitars, Marimbas).
@@ -13,7 +13,7 @@ export type DecayCfg = { _peakVelocity: number; _attackTimeSeconds: number; _dec
  * leaking memory if a MIDI file passes a malformed 60-second note duration.
  */
 export abstract class DecaySynthBase extends CoreSynthBase {
-  protected _envelopeConfig: DecayCfg = { _peakVelocity: 0.5, _attackTimeSeconds: 0.02, _decayTimeSeconds: 0.2, _maxDurationSeconds: 4.0 };
+  protected _envelopeConfig: DecayCfg = [0.5, 0.02, 0.2, 4.0];
 
   public _playNote(
     ctx: AudioContext,
@@ -26,18 +26,18 @@ export abstract class DecaySynthBase extends CoreSynthBase {
     const gain = ctx.createGain();
 
     const c = this._getEnvelopeConfig();
-    const peakVol = Math.max(0.001, velocity * c._peakVelocity);
+    const peakVol = Math.max(0.001, velocity * c[0]);
 
     /** Physical strings/mallets stop vibrating quickly. Protects against stuck MIDI notes. */
-    const safeDuration = Math.max(0.02, Math.min(duration, c._maxDurationSeconds));
+    const safeDuration = Math.max(0.02, Math.min(duration, c[3]));
 
     this._setValueAtTime(gain.gain, 0, time);
-    this._linearRampToValue(gain.gain, peakVol, time + c._attackTimeSeconds);
+    this._linearRampToValue(gain.gain, peakVol, time + c[1]);
 
-    this._applyDecay(gain.gain, peakVol, time, c._attackTimeSeconds, safeDuration, c._decayTimeSeconds);
+    this._applyDecay(gain.gain, peakVol, time, c[1], safeDuration, c[2]);
 
     /** Pad the oscillator stop time slightly past the volume decay to prevent digital clicking */
-    const stopTime = time + safeDuration + c._decayTimeSeconds + 0.1;
+    const stopTime = time + safeDuration + c[2] + 0.1;
 
     const output = this._setupSynthesis(
       ctx,

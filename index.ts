@@ -8,6 +8,7 @@
  */
 import { decodeBinary, encodeToBinary, encodeToSoA } from './RLO-Transpiler.js';
 import { RLOCore as BaseCore } from './Core/RLOCore.js';
+import { MACRO_INSTRUMENT_ID } from './types.js';
 import { RLOMusicPlayer as BaseMusicPlayer } from './Players/RLOMusicPlayer.js';
 import { RLOGameEngine as BaseGameEngine } from './Players/RLOGameEngine.js';
 import { createInstrumentMap, extendInstrumentMap, createDirectMap, SilentSynth } from './Core/InstrumentMap.js';
@@ -62,7 +63,7 @@ const retroMap = createInstrumentMap([
   { synth: new DrumSynth(), start: 128, end: 128 }
 ]);
 
-export { decodeBinary, encodeToBinary, encodeToSoA, createInstrumentMap, extendInstrumentMap, createDirectMap, SilentSynth, defaultMap as MasterInstrumentMap, defaultMap as StandardInstrumentMap, retroMap as RetroInstrumentMap };
+export { decodeBinary, encodeToBinary, encodeToSoA, createInstrumentMap, extendInstrumentMap, createDirectMap, SilentSynth, defaultMap as MasterInstrumentMap, defaultMap as StandardInstrumentMap, retroMap as RetroInstrumentMap, MACRO_INSTRUMENT_ID };
 export class RLOCore extends BaseCore { constructor(ctx: AudioContext, customMap?: ISynthInstrument[]) { super(ctx, customMap || defaultMap); } }
 export class RLOMusicPlayer extends BaseMusicPlayer { constructor(ctx: AudioContext, customMap?: ISynthInstrument[]) { super(ctx, customMap || defaultMap); } }
 export class RLOGameEngine extends BaseGameEngine { constructor(ctx: AudioContext, customMap?: ISynthInstrument[]) { super(ctx, customMap || defaultMap); } }

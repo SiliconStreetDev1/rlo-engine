@@ -179,6 +179,7 @@ let registryCode = `/**
  */\n`;
 registryCode += `import { decodeBinary, encodeToBinary, encodeToSoA } from './RLO-Transpiler.js';\n`;
 registryCode += `import { RLOCore as BaseCore } from './Core/RLOCore.js';\n`;
+registryCode += `import { MACRO_INSTRUMENT_ID } from './types.js';\n`;
 registryCode += `import { RLOMusicPlayer as BaseMusicPlayer } from './Players/RLOMusicPlayer.js';\n`;
 registryCode += `import { RLOGameEngine as BaseGameEngine } from './Players/RLOGameEngine.js';\n`;
 registryCode += `import { createInstrumentMap, extendInstrumentMap, createDirectMap, SilentSynth } from './Core/InstrumentMap.js';\n`;
@@ -209,7 +210,7 @@ registryCode += `  { synth: new ChiptuneSynth(), start: 0, end: 127 },\n`;
 registryCode += `  { synth: new DrumSynth(), start: 128, end: 128 }\n`;
 registryCode += `]);\n\n`;
 
-registryCode += `export { decodeBinary, encodeToBinary, encodeToSoA, createInstrumentMap, extendInstrumentMap, createDirectMap, SilentSynth, defaultMap as MasterInstrumentMap, defaultMap as StandardInstrumentMap, retroMap as RetroInstrumentMap };\n`;
+registryCode += `export { decodeBinary, encodeToBinary, encodeToSoA, createInstrumentMap, extendInstrumentMap, createDirectMap, SilentSynth, defaultMap as MasterInstrumentMap, defaultMap as StandardInstrumentMap, retroMap as RetroInstrumentMap, MACRO_INSTRUMENT_ID };\n`;
 registryCode += `export class RLOCore extends BaseCore { constructor(ctx: AudioContext, customMap?: ISynthInstrument[]) { super(ctx, customMap || defaultMap); } }\n`;
 registryCode += `export class RLOMusicPlayer extends BaseMusicPlayer { constructor(ctx: AudioContext, customMap?: ISynthInstrument[]) { super(ctx, customMap || defaultMap); } }\n`;
 registryCode += `export class RLOGameEngine extends BaseGameEngine { constructor(ctx: AudioContext, customMap?: ISynthInstrument[]) { super(ctx, customMap || defaultMap); } }\n`;
@@ -238,6 +239,7 @@ export default defineConfig({
     __ENABLE_NOTE_PARSER__: true,
     __ENABLE_STRICT_GC__: true,
     __ENABLE_MIDI_DEBUG__: true,
+    __ENABLE_MACRO_EXPANDER__: true,
   },
   build: {
     target: "es2020",

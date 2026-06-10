@@ -156,9 +156,7 @@ export abstract class CoreSynthBase implements ISynthInstrument {
       gcOsc.onended = () => {
         nodes.forEach((n) => {
           try {
-            if (n && typeof n.disconnect === "function") {
-              n.disconnect();
-            }
+            if (n) n.disconnect();
           } catch (e) {
             // Safe swallow: Node may have been externally disconnected by Game Engine routing.
           }

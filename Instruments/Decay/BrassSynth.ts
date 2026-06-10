@@ -12,7 +12,7 @@ import {} from "../CoreSynthBase.js";
  * required to physically model this instrument within the 13KB limit.
  */
 export class BrassSynth extends AnalogSynthBase {
-  protected _envelopeConfig = { _peakVelocity: 0.5, _attackTimeSeconds: 0.1, _releaseTimeSeconds: 0.1 };
+  protected _envelopeConfig: import("../Analog/AnalogSynthBase.js").AnalogCfg = [0.5, 0.1, 0.1];
 
   protected _setupSynthesis(
     ctx: AudioContext,

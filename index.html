@@ -20,11 +20,16 @@
         
         <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
             <button id="btnLoad80s" style="padding: 0.5rem 1rem; font-size: 1rem; background: #444; border: 1px solid #666; color: white; border-radius: 4px;">80s Arcade</button>
+            <button id="btnLoad80sMacro" style="padding: 0.5rem 1rem; font-size: 1rem; background: #1f3b30; border: 1px solid #4ade80; color: white; border-radius: 4px;">80s (Macro)</button>
             <button id="btnLoadCyberpunk" style="padding: 0.5rem 1rem; font-size: 1rem; background: #444; border: 1px solid #666; color: white; border-radius: 4px;">Cyberpunk (Mars 5/4)</button>
+            <button id="btnLoadCyberpunkMacro" style="padding: 0.5rem 1rem; font-size: 1rem; background: #1f3b30; border: 1px solid #4ade80; color: white; border-radius: 4px;">Cyberpunk (Macro)</button>
             <button id="btnLoadNoir" style="padding: 0.5rem 1rem; font-size: 1rem; background: #444; border: 1px solid #666; color: white; border-radius: 4px;">Desert Noir</button>
+            <button id="btnLoadNoirMacro" style="padding: 0.5rem 1rem; font-size: 1rem; background: #1f3b30; border: 1px solid #4ade80; color: white; border-radius: 4px;">Desert Noir (Macro)</button>
             <button id="btnLoadMary" style="padding: 0.5rem 1rem; font-size: 1rem; background: #444; border: 1px solid #666; color: white; border-radius: 4px;">Mary Had a little Lamb</button>
             <button id="btnLoadMorning" style="padding: 0.5rem 1rem; font-size: 1rem; background: #444; border: 1px solid #666; color: white; border-radius: 4px;">Morning Mood</button>
+            <button id="btnLoadMorningMacro" style="padding: 0.5rem 1rem; font-size: 1rem; background: #1f3b30; border: 1px solid #4ade80; color: white; border-radius: 4px;">Morning Mood (Macro)</button>
             <button id="btnLoadCanon" style="padding: 0.5rem 1rem; font-size: 1rem; background: #444; border: 1px solid #666; color: white; border-radius: 4px;">Canon in D</button>
+            <button id="btnLoadCanonMacro" style="padding: 0.5rem 1rem; font-size: 1rem; background: #1f3b30; border: 1px solid #4ade80; color: white; border-radius: 4px;">Canon in D (Macro)</button>
             <button id="btnLoadLevelUp" style="padding: 0.5rem 1rem; font-size: 1rem; background: #444; border: 1px solid #666; color: white; border-radius: 4px;">Level Up Sparkle</button>
         </div>
 
@@ -85,6 +90,27 @@
             <button id="btnJumpSfx">SFX: Jump</button>
             <button id="btnExplosionSfx">SFX: Explosion</button>
             <button id="btnCoinSfx">SFX: Coin</button>
+        </div>
+    </div>
+
+    <!-- SECTION: Macro Compressor Tool -->
+    <div style="margin-top: 2rem; padding: 1.5rem; background: #2a2a2a; border-radius: 8px;">
+        <h2 style="margin-top: 0;">4. Macro Compressor Tool</h2>
+        <p style="color: #ccc;">Paste an uncompressed JSON track array below to automatically compress it using LZ77 Macro extraction.</p>
+        
+        <div style="display: flex; gap: 1rem;">
+            <div style="flex: 1;">
+                <h3 style="margin-top: 0; margin-bottom: 0.5rem;">Input (Raw JSON)</h3>
+                <textarea id="compressorInput" placeholder='Paste raw JSON here (e.g., {"durationSecs":10,"notes":[...]})' style="width: 100%; height: 220px; background: #333; color: white; border: 1px solid #555; border-radius: 4px; padding: 0.5rem; font-family: monospace;"></textarea>
+            </div>
+            <div style="flex: 1;">
+                <h3 style="margin-top: 0; margin-bottom: 0.5rem;">Output (Macro JSON)</h3>
+                <textarea id="compressorOutput" readonly placeholder='Compressed output will appear here...' style="width: 100%; height: 220px; background: #333; color: #4ade80; border: 1px solid #555; border-radius: 4px; padding: 0.5rem; font-family: monospace;"></textarea>
+            </div>
+        </div>
+        <div style="margin-top: 1rem; display: flex; align-items: center; gap: 1rem;">
+            <button id="btnRunCompressor" style="padding: 0.5rem 1rem; font-size: 1rem; background: #1f3b30; border: 1px solid #4ade80; color: white; border-radius: 4px;">Compress Array</button>
+            <span id="compressorStats" style="font-size: 1.1rem; color: #4ade80;"></span>
         </div>
     </div>
 
@@ -258,9 +284,19 @@
             coreTrackData.value = await res.text();
             btnPlay.click();
         });
+        document.getElementById('btnLoad80sMacro').addEventListener('click', async () => {
+            const res = await fetch('/tracks/array/80s-macro.json');
+            coreTrackData.value = await res.text();
+            btnPlay.click();
+        });
         
         document.getElementById('btnLoadCyberpunk').addEventListener('click', async () => {
             const res = await fetch('/tracks/array/cyberpunk.json');
+            coreTrackData.value = await res.text();
+            btnPlay.click();
+        });
+        document.getElementById('btnLoadCyberpunkMacro').addEventListener('click', async () => {
+            const res = await fetch('/tracks/array/cyberpunk-macro.json');
             coreTrackData.value = await res.text();
             btnPlay.click();
         });
@@ -270,15 +306,30 @@
             coreTrackData.value = await res.text();
             btnPlay.click();
         });
+        document.getElementById('btnLoadNoirMacro').addEventListener('click', async () => {
+            const res = await fetch('/tracks/array/noir-macro.json');
+            coreTrackData.value = await res.text();
+            btnPlay.click();
+        });
 
         document.getElementById('btnLoadMorning').addEventListener('click', async () => {
             const res = await fetch('/tracks/array/Morningmood.json');
             coreTrackData.value = await res.text();
             btnPlay.click();
         });
+        document.getElementById('btnLoadMorningMacro').addEventListener('click', async () => {
+            const res = await fetch('/tracks/array/Morningmood-macro.json');
+            coreTrackData.value = await res.text();
+            btnPlay.click();
+        });
         
         document.getElementById('btnLoadCanon').addEventListener('click', async () => {
             const res = await fetch('/tracks/array/Canon.json');
+            coreTrackData.value = await res.text();
+            btnPlay.click();
+        });
+        document.getElementById('btnLoadCanonMacro').addEventListener('click', async () => {
+            const res = await fetch('/tracks/array/Canon-macro.json');
             coreTrackData.value = await res.text();
             btnPlay.click();
         });
@@ -488,6 +539,104 @@
             if (!gameEngine) gameEngine = new RLOGameEngine(new (window.AudioContext || window.webkitAudioContext)());
             gameEngine.playSFX(9, 987, 0.1, 0.7, 0); // Glockenspiel (9)
             gameEngine.playSFX(9, 1318, 0.4, 0.7, 0.1);
+        });
+
+        // ==========================================
+        // 4. MACRO COMPRESSOR LOGIC
+        // ==========================================
+        document.getElementById('btnRunCompressor').addEventListener('click', () => {
+            const inputEl = document.getElementById('compressorInput');
+            const outputEl = document.getElementById('compressorOutput');
+            const statsEl = document.getElementById('compressorStats');
+            
+            if (!inputEl.value.trim()) {
+                statsEl.style.color = '#ef4444';
+                statsEl.innerText = 'Error: Please paste a valid JSON track array into the input.';
+                return;
+            }
+            
+            try {
+                const data = JSON.parse(inputEl.value);
+                if (!data.notes || !Array.isArray(data.notes)) throw new Error('Missing "notes" array in JSON.');
+                
+                const raw = data.notes;
+                let notes = [];
+                for (let i = 0; i < raw.length; i += 5) {
+                    notes.push({
+                        f: raw[i], t: raw[i+1], d: raw[i+2], v: raw[i+3], i: raw[i+4],
+                        used: false, isTemplate: false
+                    });
+                }
+                notes.sort((a,b) => a.t - b.t);
+
+                let templates = [];
+                let macros = [];
+
+                for (let L = 64; L >= 4; L--) {
+                    for (let i = 0; i <= notes.length - L; i++) {
+                        if (notes.slice(i, i+L).some(n => n.used || n.isTemplate)) continue;
+
+                        const baseChunk = notes.slice(i, i+L);
+                        let matches = [];
+
+                        for (let j = i + L; j <= notes.length - L; j++) {
+                            if (notes.slice(j, j+L).some(n => n.used || n.isTemplate)) continue;
+                            const targetChunk = notes.slice(j, j+L);
+                            let isMatch = true;
+
+                            for (let k = 0; k < L; k++) {
+                                const n1 = baseChunk[k];
+                                const n2 = targetChunk[k];
+                                if (n1.f !== n2.f || n1.d !== n2.d || n1.v !== n2.v || n1.i !== n2.i) {
+                                    isMatch = false; break;
+                                }
+                                if (Math.abs((n1.t - baseChunk[0].t) - (n2.t - targetChunk[0].t)) > 0.005) {
+                                    isMatch = false; break;
+                                }
+                            }
+                            if (isMatch) matches.push({ startIndex: j, ratio: 1.0 });
+                        }
+
+                        if (matches.length > 0) {
+                            const templateIndex = templates.reduce((sum, t) => sum + t.length, 0);
+                            const clonedBase = baseChunk.map(n => ({...n}));
+                            templates.push(clonedBase);
+                            baseChunk.forEach(n => { n.used = true; n.isTemplate = true; });
+
+                            matches.forEach(m => {
+                                notes.slice(m.startIndex, m.startIndex + L).forEach(n => n.used = true);
+                                const matchStart = notes[m.startIndex].t;
+                                const baseStart = clonedBase[0].t;
+                                macros.push({
+                                    sourceIndex: templateIndex,
+                                    timeOffset: matchStart - baseStart,
+                                    noteCount: L,
+                                    pitchMult: m.ratio
+                                });
+                            });
+                        }
+                    }
+                }
+
+                const finalNotes = [];
+                templates.forEach(chunk => chunk.forEach(n => finalNotes.push(n.f, n.t, n.d, n.v, n.i)));
+                notes.forEach(n => { if (!n.used) finalNotes.push(n.f, n.t, n.d, n.v, n.i); });
+                macros.forEach(m => finalNotes.push(m.sourceIndex, Math.round(m.timeOffset*1000)/1000, m.noteCount, Math.round(m.pitchMult*1000)/1000, 255));
+
+                data.notes = finalNotes;
+                
+                const origStr = JSON.stringify(raw).length;
+                const newStr = JSON.stringify(finalNotes).length;
+                const percent = (100 - (newStr/origStr)*100).toFixed(1);
+                
+                outputEl.value = JSON.stringify(data, null, 0);
+                statsEl.style.color = '#4ade80';
+                statsEl.innerText = `Success! ${raw.length/5} notes -> ${percent}% space saved (${origStr} char -> ${newStr} char)`;
+                
+            } catch (err) {
+                statsEl.style.color = '#ef4444';
+                statsEl.innerText = 'Error parsing JSON: ' + err.message;
+            }
         });
 
     </script>
