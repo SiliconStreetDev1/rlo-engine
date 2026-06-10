@@ -13,7 +13,7 @@ Demo PWA game using this library : https://github.com/SiliconStreetDev1/NeonBlit
 See JS13ksize working example:
 https://github.com/SiliconStreetDev1/NeonBlitzjs13k
 
-📜 **[View Changelog (v1.1.0 Update)](./CHANGELOG.md)**
+📜 **[View Changelog (v1.2.0 Update)](./CHANGELOG.md)**
 
 ### 🚀 Two Ways to Use the Engine
 
