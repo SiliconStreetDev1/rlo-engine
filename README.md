@@ -360,6 +360,7 @@ RLO-Engine does exactly this for your musical arrays! If you have a repeating dr
 1. Drop your raw array JSON into the **Macro Compressor Tool** at the bottom of the `index.html` demo rig.
 2. OR, run `node compress_macro.cjs` via the terminal.
 3. The engine core (`RLOCore`) will automatically detect the `255` instructions and dynamically decompress them instantly in-memory right before playing the song!
+4. **Stripping the Engine:** If you choose NOT to use compressed arrays, you can completely strip the 209-byte macro expander from your final `crush` build by setting `__ENABLE_MACRO_EXPANDER__: false` inside your `vite.config.js13k.ts` file!
 
 ---
 
